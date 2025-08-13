@@ -1,0 +1,5 @@
+{
+  "name": "Tesla Delivery Status Checker",
+  "description": "An application to monitor the status of your Tesla vehicle order. It provides real-time updates and highlights any changes since the last check, helping you stay informed about your delivery timeline.",
+  "requestFramePermissions": []
+}
