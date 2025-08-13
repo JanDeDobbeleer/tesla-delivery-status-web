@@ -72,53 +72,55 @@ const OrderTimeline: React.FC<{ combinedOrder: CombinedOrder }> = ({ combinedOrd
   }
 
   return (
-    <div className="px-2 pt-2 pb-4">
-      <h3 className="text-base font-semibold mb-6 text-gray-700 dark:text-gray-300">Order Progress</h3>
-      <div className="flex items-start">
-        {STAGES.map((stage, index) => {
-          const isComplete = stageStatuses[index];
-          const isCurrent = index === currentStageIndex;
+    <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="px-5 pt-4 pb-5">
+        <h3 className="text-base font-semibold mb-6 text-gray-700 dark:text-gray-300">Order Progress</h3>
+        <div className="flex items-start">
+          {STAGES.map((stage, index) => {
+            const isComplete = stageStatuses[index];
+            const isCurrent = index === currentStageIndex;
 
-          const stageDate = isComplete ? stage.date(combinedOrder) : null;
+            const stageDate = isComplete ? stage.date(combinedOrder) : null;
 
-          let circleClasses = 'bg-gray-300 dark:bg-tesla-gray-600';
-          let textClasses = 'text-gray-500 dark:text-tesla-gray-500';
-          let iconClasses = 'text-gray-500 dark:text-tesla-gray-400';
+            let circleClasses = 'bg-gray-300 dark:bg-tesla-gray-600';
+            let textClasses = 'text-gray-500 dark:text-tesla-gray-500';
+            let iconClasses = 'text-gray-500 dark:text-tesla-gray-400';
 
-          if (isComplete) {
-            circleClasses = 'bg-blue-600';
-            textClasses = 'text-blue-600 dark:text-blue-400';
-            iconClasses = 'text-white';
-          }
-          if (isCurrent) {
-            circleClasses += ' ring-4 ring-offset-2 ring-blue-500/50 dark:ring-offset-tesla-gray-800';
-            textClasses += ' font-bold';
-          }
+            if (isComplete) {
+              circleClasses = 'bg-blue-600';
+              textClasses = 'text-blue-600 dark:text-blue-400';
+              iconClasses = 'text-white';
+            }
+            if (isCurrent) {
+              circleClasses += ' ring-4 ring-offset-2 ring-blue-500/50 dark:ring-offset-tesla-gray-800';
+              textClasses += ' font-bold';
+            }
 
-          const connectorComplete = index > 0 && index <= currentStageIndex;
-          const connectorClasses = connectorComplete ? 'bg-blue-600' : 'bg-gray-300 dark:bg-tesla-gray-600';
+            const connectorComplete = index > 0 && index <= currentStageIndex;
+            const connectorClasses = connectorComplete ? 'bg-blue-600' : 'bg-gray-300 dark:bg-tesla-gray-600';
 
-          const StageIcon = stage.icon;
+            const StageIcon = stage.icon;
 
-          return (
-            <React.Fragment key={stage.id}>
-              {index > 0 && <div className={`flex-auto h-1 mt-5 ${connectorClasses} transition-colors duration-500`}></div>}
-              <div className="flex flex-col items-center flex-shrink-0 mx-1" style={{width: '65px'}}>
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${circleClasses} transition-all duration-500 transform group-hover:scale-110 z-10`}
-                >
-                  <StageIcon className={`w-5 h-5 ${iconClasses} transition-colors duration-500`} />
+            return (
+              <React.Fragment key={stage.id}>
+                {index > 0 && <div className={`flex-auto h-1 mt-5 min-w-8 ${connectorClasses} transition-colors duration-500`}></div>}
+                <div className="flex flex-col items-center flex-shrink-0 mx-2 w-[75px]">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${circleClasses} transition-all duration-500 transform group-hover:scale-110 z-10`}
+                  >
+                    <StageIcon className={`w-5 h-5 ${iconClasses} transition-colors duration-500`} />
+                  </div>
+                  <p className={`mt-2 text-xs text-center ${textClasses} transition-colors duration-500`}>{stage.label}</p>
+                   {stageDate && (
+                    <p className="text-xs text-gray-400 dark:text-tesla-gray-500 mt-1 whitespace-nowrap">
+                      {stageDate}
+                    </p>
+                  )}
                 </div>
-                <p className={`mt-2 text-xs text-center ${textClasses} transition-colors duration-500`}>{stage.label}</p>
-                 {stageDate && (
-                  <p className="text-xs text-gray-400 dark:text-tesla-gray-500 mt-1 whitespace-nowrap">
-                    {stageDate}
-                  </p>
-                )}
-              </div>
-            </React.Fragment>
-          );
-        })}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
