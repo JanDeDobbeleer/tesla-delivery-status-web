@@ -54,6 +54,13 @@ const App: React.FC = () => {
     sessionStorage.removeItem('tesla-code-verifier');
     setTokens(null);
   }, []);
+  
+  const handleSessionExpired = useCallback(() => {
+    localStorage.removeItem('tesla-tokens');
+    sessionStorage.removeItem('tesla-auth-state');
+    sessionStorage.removeItem('tesla-code-verifier');
+    setTokens(null);
+  }, []);
 
   const handleUrlSubmit = async (url: string) => {
     setIsSubmitting(true);
@@ -116,14 +123,14 @@ const App: React.FC = () => {
         } catch (error) {
           console.error('Failed to validate or refresh token:', error);
           setAuthError('Your session has expired. Please log in again.');
-          handleLogout();
+          handleSessionExpired();
         }
       }
       setLoading(false);
     };
 
     checkExistingSession();
-  }, [handleLogout]);
+  }, [handleSessionExpired]);
 
   if (loading) {
     return (
@@ -138,6 +145,7 @@ const App: React.FC = () => {
     <Dashboard 
       tokens={tokens} 
       onLogout={handleLogout} 
+      onSessionExpired={handleSessionExpired}
       theme={theme}
       toggleTheme={toggleTheme}
     />

@@ -10,11 +10,12 @@ import { TeslaLogo, LogoutIcon, RefreshIcon, SunIcon, MoonIcon } from './icons';
 interface DashboardProps {
   tokens: TeslaTokens;
   onLogout: () => void;
+  onSessionExpired: () => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, theme, toggleTheme }) => {
+const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpired, theme, toggleTheme }) => {
   const [orders, setOrders] = useState<CombinedOrder[]>([]);
   const [diffs, setDiffs] = useState<Record<string, OrderDiff>>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -65,12 +66,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, theme, toggleTh
       console.error('Failed to fetch orders:', err);
       setError('Could not retrieve order information. The session might be invalid.');
       if (err instanceof Error && err.message.includes('401')) {
-          setTimeout(onLogout, 3000);
+          setTimeout(onSessionExpired, 3000);
       }
     } finally {
       setLoading(false);
     }
-  }, [tokens.access_token, onLogout]);
+  }, [tokens.access_token, onSessionExpired]);
 
   useEffect(() => {
     fetchAndCompareOrders();
