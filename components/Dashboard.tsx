@@ -137,6 +137,8 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, theme, toggleTh
     );
   };
 
+  const iconButtonClasses = "p-2 rounded-full hover:bg-gray-200 dark:hover:bg-tesla-gray-700 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-tesla-gray-900 active:scale-90 active:bg-gray-300 dark:active:bg-tesla-gray-600";
+
   return (
     <div className="min-h-screen w-full max-w-screen-2xl mx-auto p-4 sm:p-6 lg:p-8">
       <header className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200 dark:border-tesla-gray-700/50">
@@ -147,7 +149,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, theme, toggleTh
         <div className="flex items-center space-x-1 sm:space-x-2">
            <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-tesla-gray-700 transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-tesla-gray-900"
+            className={iconButtonClasses}
             aria-label="Toggle Theme"
           >
             {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
@@ -155,14 +157,14 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, theme, toggleTh
           <button
             onClick={fetchAndCompareOrders}
             disabled={loading}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-tesla-gray-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-tesla-gray-900"
+            className={`${iconButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:bg-transparent dark:disabled:bg-transparent`}
             aria-label="Refresh Orders"
           >
             <RefreshIcon className={`w-6 h-6 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button
             onClick={onLogout}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-tesla-gray-700 transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-tesla-gray-900"
+            className={iconButtonClasses}
             aria-label="Logout"
           >
             <LogoutIcon className="w-6 h-6" />

@@ -52,7 +52,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
     await onUrlSubmit(pastedUrl);
   };
   
-  const commonButtonClasses = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/50 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:dark:bg-tesla-gray-600 disabled:dark:hover:bg-tesla-gray-600 disabled:opacity-70 disabled:cursor-not-allowed";
+  const commonButtonClasses = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/50 active:scale-95 active:brightness-90 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:dark:bg-tesla-gray-600 disabled:dark:hover:bg-tesla-gray-600 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none";
 
   if (loginStep === 'paste_url') {
     return (
@@ -137,14 +137,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
               />
               <button 
                 onClick={() => navigator.clipboard.writeText(manualLoginUrl)} 
-                className="ml-2 px-3 py-1 text-xs bg-yellow-400/50 hover:bg-yellow-400/80 text-yellow-900 dark:text-yellow-100 rounded-md font-semibold"
+                className="ml-2 px-3 py-1 text-xs bg-yellow-400/50 hover:bg-yellow-400/80 text-yellow-900 dark:text-yellow-100 rounded-md font-semibold transition-all duration-150 active:scale-95"
               >
                 Copy
               </button>
             </div>
             <button 
               onClick={proceedAfterManualLogin} 
-              className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+              className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-150 active:scale-95 active:brightness-90"
             >
               I have logged in, proceed to paste URL
             </button>

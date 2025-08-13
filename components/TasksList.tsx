@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { OrderDetails, TeslaTask } from '../types';
 import { TimelineDeliveredIcon as CheckIcon, CircleIcon, ArrowRightIcon } from './icons';
@@ -59,7 +60,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasksData }) => {
           </div>
           {task.enabled && task.card?.buttonText?.cta && (
             <div className="flex-shrink-0 self-center">
-              <button className="flex items-center space-x-1 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-md">
+              <button className="flex items-center space-x-1 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-md transition-transform duration-150 active:scale-95">
                 <span>{task.card.buttonText.cta}</span>
                 <ArrowRightIcon className="w-4 h-4" />
               </button>

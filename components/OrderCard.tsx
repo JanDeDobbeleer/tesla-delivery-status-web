@@ -149,7 +149,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
   }> = ({ view, label, icon }) => (
     <button
       onClick={() => setActiveView(view)}
-      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-tesla-gray-800 ${
+      className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-tesla-gray-800 ${
         activeView === view
           ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
           : 'text-gray-500 dark:text-tesla-gray-400 border-b-2 border-transparent hover:bg-gray-100 dark:hover:bg-tesla-gray-700/50'
@@ -191,7 +191,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
               <div className="flex-shrink-0 flex items-center gap-2">
                   <button
                       onClick={() => setIsHistoryModalOpen(true)}
-                      className="p-2 rounded-full text-gray-500 dark:text-tesla-gray-400 hover:bg-gray-200 dark:hover:bg-tesla-gray-700 transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-tesla-gray-800"
+                      className="p-2 rounded-full text-gray-500 dark:text-tesla-gray-400 hover:bg-gray-200 dark:hover:bg-tesla-gray-700 transition-all duration-150 active:scale-90 active:bg-gray-300 dark:active:bg-tesla-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-tesla-gray-800"
                       aria-label="View Order History"
                   >
                       <HistoryIcon className="w-5 h-5" />
@@ -253,7 +253,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
               </div>
             </div>
             <div className="p-3 border-t border-gray-200 dark:border-tesla-gray-700/50">
-                <button onClick={() => setIsExpanded(!isExpanded)} className="w-full flex justify-center items-center text-sm font-semibold text-gray-500 hover:text-gray-800 dark:text-tesla-gray-300 dark:hover:text-white transition-colors duration-200 py-1 rounded-md">
+                <button onClick={() => setIsExpanded(!isExpanded)} className="w-full flex justify-center items-center text-sm font-semibold text-gray-500 hover:text-gray-800 dark:text-tesla-gray-300 dark:hover:text-white transition-all duration-150 py-1 rounded-md active:bg-gray-100 dark:active:bg-tesla-gray-700/50">
                   {isExpanded ? 'Show Less' : 'Show More Details'}
                   <ChevronDownIcon className={`w-5 h-5 ml-1 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>
