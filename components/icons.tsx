@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   LogOut,
@@ -29,6 +28,8 @@ import {
   History,
   X,
   FileText,
+  Braces,
+  Copy,
 } from 'lucide-react';
 
 export const TeslaLogo: React.FC<{ className?: string }> = ({ className }) => (
@@ -88,3 +89,7 @@ export const ArrowRightIcon = ArrowRight;
 export const HistoryIcon = History;
 export const XIcon = X;
 export const FileTextIcon = FileText;
+
+// Icons for JSON Viewer
+export const JsonIcon = Braces;
+export const CopyIcon = Copy;

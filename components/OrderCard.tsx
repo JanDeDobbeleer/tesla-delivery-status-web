@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { CombinedOrder, OrderDiff } from '../types';
-import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon } from './icons';
+import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon } from './icons';
 import { CAR_IMAGE_URLS } from '../constants';
 import { TESLA_STORES } from '../data/tesla-stores';
 import OrderTimeline from './OrderTimeline';
@@ -9,6 +8,7 @@ import DeliveryChecklist from './DeliveryChecklist';
 import VehicleOptions from './VehicleOptions';
 import TasksList from './TasksList';
 import HistoryModal from './HistoryModal';
+import JsonViewer from './JsonViewer';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
@@ -89,7 +89,7 @@ const OrderStatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
 const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [activeView, setActiveView] = useState<'details' | 'checklist' | 'tasks'>('details');
+  const [activeView, setActiveView] = useState<'details' | 'checklist' | 'tasks' | 'json'>('details');
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const { order, details } = combinedOrder;
 
@@ -143,7 +143,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
   const mktOptions = createDiffWithValue('order.mktOptions');
 
   const TabButton: React.FC<{
-    view: 'details' | 'checklist' | 'tasks';
+    view: 'details' | 'checklist' | 'tasks' | 'json';
     label: string;
     icon: React.ReactNode;
   }> = ({ view, label, icon }) => (
@@ -210,6 +210,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
           <TabButton view="details" label="Order Details" icon={<CarIcon className="w-5 h-5" />} />
           <TabButton view="tasks" label="App Tasks" icon={<TasksIcon className="w-5 h-5" />} />
           <TabButton view="checklist" label="Delivery Checklist" icon={<ChecklistIcon className="w-5 h-5" />} />
+          <TabButton view="json" label="Full JSON" icon={<JsonIcon className="w-5 h-5" />} />
         </div>
 
         {/* --- Conditional Content --- */}
@@ -270,6 +271,12 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
         {activeView === 'checklist' && (
           <div role="tabpanel">
               <DeliveryChecklist orderReferenceNumber={order.referenceNumber} />
+          </div>
+        )}
+
+        {activeView === 'json' && (
+          <div role="tabpanel" className="flex-grow">
+            <JsonViewer data={combinedOrder} />
           </div>
         )}
       </div>
