@@ -14,7 +14,7 @@ import { generateCodeVerifier, generateCodeChallenge } from '../utils/helpers';
 
 // --- Authentication Flow ---
 
-export async function handleTeslaLogin(): Promise<{ success: boolean; url: string }> {
+export async function handleTeslaLogin(): Promise<string> {
   const state = btoa(crypto.randomUUID());
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -33,14 +33,9 @@ export async function handleTeslaLogin(): Promise<{ success: boolean; url: strin
   });
 
   const authUrl = `${AUTH_URL}?${params.toString()}`;
-  const newWindow = window.open(authUrl, '_blank', 'noopener,noreferrer');
-
-  let success = true;
-  if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-    success = false;
-  }
+  window.open(authUrl, '_blank', 'noopener,noreferrer');
   
-  return { success, url: authUrl };
+  return authUrl;
 }
 
 export async function exchangeCodeForTokens(code: string, codeVerifier: string): Promise<TeslaTokens> {
