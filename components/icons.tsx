@@ -30,6 +30,7 @@ import {
   FileText,
   Braces,
   Copy,
+  Github,
 } from 'lucide-react';
 
 export const TeslaLogo: React.FC<{ className?: string }> = ({ className }) => (
@@ -93,3 +94,6 @@ export const FileTextIcon = FileText;
 // Icons for JSON Viewer
 export const JsonIcon = Braces;
 export const CopyIcon = Copy;
+
+// Icon for Github link
+export const GithubIcon = Github;

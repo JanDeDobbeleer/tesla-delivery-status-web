@@ -1,13 +1,29 @@
 
 import React, { useState } from 'react';
 import { handleTeslaLogin } from '../services/tesla';
-import { TeslaLogo } from './icons';
+import { TeslaLogo, GithubIcon } from './icons';
 
 interface LoginScreenProps {
   error?: string | null;
   onUrlSubmit: (url: string) => Promise<void>;
   isSubmitting: boolean;
 }
+
+const GithubLink: React.FC = () => (
+    <div className="mt-8 text-center">
+        <a 
+            href="https://github.com/GewoonJaap/tesla-delivery-status-web" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-gray-500 dark:text-tesla-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
+            aria-label="View source on GitHub"
+        >
+            <GithubIcon className="w-4 h-4" />
+            <span className="text-sm">View on GitHub</span>
+        </a>
+    </div>
+);
+
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitting }) => {
   const [loginStep, setLoginStep] = useState<'initial' | 'paste_url'>('initial');
@@ -111,6 +127,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
            <p className="text-xs text-gray-500 dark:text-tesla-gray-500 mt-6">
             This manual copy-paste step is required by Tesla's authentication flow for third-party apps.
           </p>
+          <GithubLink />
         </div>
       </div>
     );
@@ -128,7 +145,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
         <p className="text-gray-600 dark:text-tesla-gray-300 mb-6">
           Log in with your Tesla account to track your vehicle order.
         </p>
-        
+
         <div className="text-sm bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 text-blue-800 dark:text-blue-200 rounded-lg p-3 mb-6 text-left">
             <p className="font-semibold">Important Login Steps:</p>
             <ol className="list-decimal list-inside mt-1 space-y-1">
@@ -149,9 +166,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
         >
           Sign In with Tesla
         </button>
-        <p className="text-xs text-gray-500 dark:text-tesla-gray-500 mt-6">
-          This is a third-party application and is not affiliated with Tesla, Inc. Your credentials are handled securely by Tesla's official login page.
-        </p>
+        <div className="text-xs text-gray-500 dark:text-tesla-gray-500 mt-6 space-y-2">
+            <p>
+                This is a third-party application and is not affiliated with Tesla, Inc. Your credentials are handled securely by Tesla's official login page.
+            </p>
+            <p>
+                To function, this app stores authentication tokens in your browser. Your password is never seen by this app. For full transparency, the project is open-source.
+            </p>
+        </div>
+        <GithubLink />
       </div>
     </div>
   );
