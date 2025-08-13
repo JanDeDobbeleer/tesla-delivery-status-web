@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { handleTeslaLogin } from '../services/tesla';
 import { TeslaLogo, GithubIcon } from './icons';
+import { GITHUB_REPO_URL } from '../constants';
 
 interface LoginScreenProps {
   error?: string | null;
@@ -12,7 +13,7 @@ interface LoginScreenProps {
 const GithubLink: React.FC = () => (
     <div className="mt-8 text-center">
         <a 
-            href="https://github.com/GewoonJaap/tesla-delivery-status-web" 
+            href={GITHUB_REPO_URL} 
             target="_blank" 
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-gray-500 dark:text-tesla-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"

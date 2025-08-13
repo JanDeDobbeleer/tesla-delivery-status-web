@@ -9,6 +9,7 @@ export const APP_VERSION = '9.99.9-9999';
 export const ORDERS_API_URL = 'https://owner-api.teslamotors.com/api/1/users/orders';
 export const ORDER_DETAILS_API_URL_TEMPLATE = 'https://akamai-apigateway-vfx.tesla.com/tasks?deviceLanguage=en&deviceCountry=US&referenceNumber={ORDER_ID}&appVersion=' + APP_VERSION;
 export const PROXY_API_URL = 'https://tesla-delivery-proxy.gewoonjaap.workers.dev/';
+export const GITHUB_REPO_URL = 'https://github.com/GewoonJaap/tesla-delivery-status-web';
 
 export const CAR_IMAGE_URLS: Record<string, string> = {
   'S': 'https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Mega-Menu-Vehicles-Model-S.png',

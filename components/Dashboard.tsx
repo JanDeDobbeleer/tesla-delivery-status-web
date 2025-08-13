@@ -5,6 +5,7 @@ import { compareObjects } from '../utils/helpers';
 import OrderCard from './OrderCard';
 import Spinner from './Spinner';
 import { TeslaLogo, LogoutIcon, RefreshIcon, SunIcon, MoonIcon, GithubIcon } from './icons';
+import { GITHUB_REPO_URL } from '../constants';
 
 interface DashboardProps {
   tokens: TeslaTokens;
@@ -148,7 +149,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
         </div>
         <div className="flex items-center space-x-1 sm:space-x-2">
            <a
-            href="https://github.com/GewoonJaap/tesla-delivery-status-web"
+            href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className={iconButtonClasses}
