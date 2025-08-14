@@ -53,22 +53,42 @@ function isObject(obj: any): obj is object {
     return obj !== null && typeof obj === 'object' && !Array.isArray(obj);
 }
 
-export function compareObjects(oldObj: any, newObj: any, path: string = '', diffs: OrderDiff = {}): OrderDiff {
-    const oldKeys = Object.keys(oldObj);
-    const newKeys = Object.keys(newObj);
+// Helper to compare arrays. Using JSON.stringify is a pragmatic choice for this app's data.
+// It's fast and handles nested structures, but is sensitive to property order in objects.
+const areArraysEqual = (a: any[], b: any[]): boolean => {
+    if (a.length !== b.length) {
+        return false;
+    }
+    // This is a quick way to compare arrays of primitives or simple objects.
+    // It will consider arrays with same elements but different order as different.
+    return JSON.stringify(a) === JSON.stringify(b);
+};
 
-    for (const key of new Set([...oldKeys, ...newKeys])) {
+export function compareObjects(oldObj: any, newObj: any, path: string = '', diffs: OrderDiff = {}): OrderDiff {
+    const a = oldObj || {};
+    const b = newObj || {};
+
+    const allKeys = new Set([...Object.keys(a), ...Object.keys(b)]);
+
+    for (const key of allKeys) {
         const currentPath = path ? `${path}.${key}` : key;
-        const oldVal = oldObj[key];
-        const newVal = newObj[key];
+        const oldVal = a[key];
+        const newVal = b[key];
+
+        if (Object.is(oldVal, newVal)) {
+            continue; // Values are strictly equal, no change.
+        }
 
         if (isObject(oldVal) && isObject(newVal)) {
             compareObjects(oldVal, newVal, currentPath, diffs);
-        } else if (!Object.is(oldVal, newVal)) {
-            // Only add diff if one of the values is not undefined
-            if(typeof oldVal !== 'undefined' || typeof newVal !== 'undefined') {
+        } else if (Array.isArray(oldVal) && Array.isArray(newVal)) {
+            if (!areArraysEqual(oldVal, newVal)) {
                 diffs[currentPath] = { old: oldVal, new: newVal };
             }
+        } else {
+            // This covers primitives, nulls, undefined, and type mismatches (e.g., object vs. array).
+            // The Object.is check at the top has already filtered out identical values, so if we're here, it's a difference.
+            diffs[currentPath] = { old: oldVal, new: newVal };
         }
     }
     return diffs;
