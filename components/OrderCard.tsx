@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CombinedOrder, OrderDiff } from '../types';
 import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon } from './icons';
-import { CAR_IMAGE_URLS } from '../constants';
+import { COMPOSITOR_BASE_URL, FALLBACK_CAR_IMAGE_URLS } from '../constants';
 import { TESLA_STORES } from '../data/tesla-stores';
 import OrderTimeline from './OrderTimeline';
 import DeliveryChecklist from './DeliveryChecklist';
@@ -62,9 +62,47 @@ const normalizeModelCode = (apiCode?: string): string => {
         case 'ct': case 'cybertruck': return 'CYBERTRUCK';
         default:
             const upperCode = apiCode.toUpperCase();
-            return upperCode in CAR_IMAGE_URLS ? upperCode : apiCode;
+            return upperCode in FALLBACK_CAR_IMAGE_URLS ? upperCode : apiCode;
     }
 };
+
+const getModelApiCode = (apiCode?: string): string | null => {
+    if (!apiCode) return null;
+    const code = apiCode.toLowerCase().replace(/model\s?/i, '').trim();
+    switch (code) {
+        case 'ms': case 's': return 'ms';
+        case 'm3': case '3': return 'm3';
+        case 'mx': case 'x': return 'mx';
+        case 'my': case 'y': return 'my';
+        case 'ct': case 'cybertruck': return 'ct';
+        default:
+            return null;
+    }
+};
+
+const generateCompositorUrl = (orderData: CombinedOrder['order']): string | null => {
+      const model = getModelApiCode(orderData.modelCode);
+      const options = orderData.mktOptions;
+
+      if (!model || !options) {
+        return null;
+      }
+      
+      const formattedOptions = options.split(',').filter(o => o.trim()).map(o => `$${o.trim()}`).join(',');
+
+      const params = new URLSearchParams({
+          context: 'design_studio_2',
+          bkba_opt: '1',
+          view: 'STUD_3QTR',
+          size: '800',
+          model: model,
+          options: formattedOptions,
+          crop: '1150,647,390,180'
+      });
+
+      return `${COMPOSITOR_BASE_URL}?${params.toString()}`;
+};
+
 
 const OrderStatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const statusLower = status.toLowerCase();
@@ -127,7 +165,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
   };
 
   const modelCode = normalizeModelCode(order.modelCode);
-  const imageUrl = modelCode ? CAR_IMAGE_URLS[modelCode] : undefined;
+  const fallbackImageUrl = modelCode ? FALLBACK_CAR_IMAGE_URLS[modelCode] : undefined;
+  const imageUrl = generateCompositorUrl(order) || fallbackImageUrl;
   
   const vin = createDiffWithValue('order.vin');
   const deliveryWindow = createDiffWithValue('details.tasks.scheduling.deliveryWindowDisplay');

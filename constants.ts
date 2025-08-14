@@ -1,4 +1,3 @@
-
 export const CLIENT_ID = 'ownerapi';
 export const REDIRECT_URI = 'https://auth.tesla.com/void/callback';
 export const AUTH_URL = 'https://auth.tesla.com/oauth2/v3/authorize';
@@ -11,7 +10,9 @@ export const ORDER_DETAILS_API_URL_TEMPLATE = 'https://akamai-apigateway-vfx.tes
 export const PROXY_API_URL = 'https://tesla-delivery-proxy.gewoonjaap.workers.dev/';
 export const GITHUB_REPO_URL = 'https://github.com/GewoonJaap/tesla-delivery-status-web';
 
-export const CAR_IMAGE_URLS: Record<string, string> = {
+export const COMPOSITOR_BASE_URL = 'https://static-assets.tesla.com/configurator/compositor';
+
+export const FALLBACK_CAR_IMAGE_URLS: Record<string, string> = {
   'S': 'https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Mega-Menu-Vehicles-Model-S.png',
   '3': 'https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Mega-Menu-Vehicles-Model-3-Performance-LHD.png',
   'X': 'https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Mega-Menu-Vehicles-Model-X.png',
