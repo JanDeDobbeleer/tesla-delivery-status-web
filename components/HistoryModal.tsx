@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { HistoricalSnapshot, OrderDiff } from '../types';
+import { HistoricalSnapshot } from '../types';
 import { compareObjects } from '../utils/helpers';
 import { DIFF_KEY_LABELS } from '../constants';
 import { XIcon, FileTextIcon, ArrowRightIcon } from './icons';
@@ -12,8 +12,18 @@ interface HistoryModalProps {
 }
 
 const formatValue = (value: any): string => {
-  if (value === null || value === undefined || value === '') return 'N/A';
-  return String(value).trim();
+  if (value === undefined || value === null) return 'N/A';
+  if (typeof value === 'object') {
+    // Attempt to pretty-print JSON, but keep it on one line if it's short
+    const jsonString = JSON.stringify(value);
+    if (jsonString.length > 75) {
+      return JSON.stringify(value, null, 2);
+    }
+    return jsonString;
+  }
+  if (value === '') return '"" (empty string)';
+  if (typeof value === 'boolean') return value ? 'True' : 'False';
+  return String(value);
 };
 
 const getLabel = (key: string): string => {
@@ -21,18 +31,19 @@ const getLabel = (key: string): string => {
 };
 
 const ChangeItem: React.FC<{ label: string; from: any; to: any }> = ({ label, from, to }) => (
-  <li className="flex items-start text-sm py-2">
-    <FileTextIcon className="w-4 h-4 mr-3 mt-0.5 flex-shrink-0 text-gray-400 dark:text-tesla-gray-500" />
-    <div className="flex-grow">
-      <span className="font-semibold text-gray-700 dark:text-tesla-gray-200">{label}:</span>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-gray-500 dark:text-tesla-gray-400 mt-1">
-        <span className="line-through">{formatValue(from)}</span>
-        <ArrowRightIcon className="w-4 h-4 text-gray-400 dark:text-tesla-gray-500 hidden sm:block" />
-        <span className="text-gray-800 dark:text-white font-medium">{formatValue(to)}</span>
+  <li className="flex items-start text-sm py-3">
+    <FileTextIcon className="w-4 h-4 mr-3 mt-1 flex-shrink-0 text-gray-400 dark:text-tesla-gray-500" />
+    <div className="flex-grow min-w-0">
+      <p className="font-semibold text-gray-700 dark:text-tesla-gray-200 break-words">{label}</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:gap-2 text-gray-500 dark:text-tesla-gray-400 mt-1">
+        <span className="line-through whitespace-pre-wrap break-all">{formatValue(from)}</span>
+        <ArrowRightIcon className="w-4 h-4 text-gray-400 dark:text-tesla-gray-500 hidden sm:block shrink-0 mt-1" />
+        <span className="text-gray-800 dark:text-white font-medium whitespace-pre-wrap break-all">{formatValue(to)}</span>
       </div>
     </div>
   </li>
 );
+
 
 const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, orderReferenceNumber }) => {
   const [history, setHistory] = useState<HistoricalSnapshot[]>([]);
@@ -43,6 +54,8 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, orderRefer
         const storedHistoryJson = localStorage.getItem(`tesla-order-history-${orderReferenceNumber}`);
         if (storedHistoryJson) {
           setHistory(JSON.parse(storedHistoryJson));
+        } else {
+          setHistory([]);
         }
       } catch (e) {
         console.error("Failed to parse history from localStorage", e);
@@ -64,20 +77,41 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, orderRefer
     
     return reversedHistory.map((snapshot, index) => {
       const previousSnapshot = reversedHistory[index + 1] || null;
-      const diffs = compareObjects(previousSnapshot ? previousSnapshot.data : {}, snapshot.data);
-      
-      // Filter out diffs for keys we don't want to show.
-      const relevantDiffs = Object.entries(diffs).filter(([key]) => key in DIFF_KEY_LABELS);
-      
-      if (relevantDiffs.length === 0 && previousSnapshot) {
-        // No relevant changes for this snapshot, so we can skip rendering it
-        // unless it's the very first one.
-        return null;
-      }
-      
       const dateTime = new Date(snapshot.timestamp);
       const formattedDate = dateTime.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
       const formattedTime = dateTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+      // This is the very first snapshot, which establishes the baseline.
+      if (!previousSnapshot) {
+        return (
+            <div key={snapshot.timestamp} className="relative pl-8">
+              <span className="absolute left-0 top-1.5 h-full w-0.5 bg-gray-200 dark:bg-tesla-gray-700"></span>
+              <div className="absolute left-[-5px] top-3 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-white dark:ring-tesla-gray-800"></div>
+              
+              <div className="pb-8">
+                <h4 className="font-semibold text-gray-800 dark:text-white">{formattedDate}
+                    <span className="text-sm font-normal text-gray-500 dark:text-tesla-gray-400 ml-2">{formattedTime}</span>
+                </h4>
+                <div className="mt-3 p-4 bg-gray-50 dark:bg-tesla-gray-900/50 rounded-lg border border-gray-200 dark:border-tesla-gray-700/50">
+                    <p className="text-sm font-semibold mb-2 text-gray-600 dark:text-tesla-gray-300">
+                        Initial State Recorded
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-tesla-gray-400">
+                        The first check has established a baseline. Any future changes to your order will be logged here.
+                    </p>
+                </div>
+              </div>
+            </div>
+        );
+      }
+      
+      const diffs = compareObjects(previousSnapshot.data, snapshot.data);
+      const allDiffs = Object.entries(diffs);
+      
+      // If there are no changes, don't render an entry for this snapshot.
+      if (allDiffs.length === 0) {
+        return null;
+      }
 
       return (
         <div key={snapshot.timestamp} className="relative pl-8">
@@ -90,16 +124,12 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, orderRefer
             </h4>
             <div className="mt-3 p-4 bg-gray-50 dark:bg-tesla-gray-900/50 rounded-lg border border-gray-200 dark:border-tesla-gray-700/50">
                 <p className="text-sm font-semibold mb-2 text-gray-600 dark:text-tesla-gray-300">
-                    {previousSnapshot ? "Changes Detected:" : "Initial State Recorded:"}
+                    Changes Detected:
                 </p>
                 <ul className="divide-y divide-gray-200 dark:divide-tesla-gray-700/50">
-                    {relevantDiffs.length > 0 ? (
-                        relevantDiffs.map(([key, { old: oldVal, new: newVal }]) => (
-                            <ChangeItem key={key} label={getLabel(key)} from={oldVal} to={newVal} />
-                        ))
-                    ) : (
-                        <li><p className="text-sm text-gray-500 dark:text-tesla-gray-400 py-2">No relevant changes in this snapshot.</p></li>
-                    )}
+                    {allDiffs.map(([key, { old: oldVal, new: newVal }]) => (
+                        <ChangeItem key={key} label={getLabel(key)} from={oldVal} to={newVal} />
+                    ))}
                 </ul>
             </div>
           </div>
