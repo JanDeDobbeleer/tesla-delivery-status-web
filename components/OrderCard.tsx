@@ -80,7 +80,7 @@ const getModelApiCode = (apiCode?: string): string | null => {
     }
 };
 
-const generateCompositorUrl = (orderData: CombinedOrder['order']): string | null => {
+const generateCompositorUrl = (orderData: CombinedOrder['order'], view: 'STUD_3QTR' | 'STUD_SEAT'): string | null => {
       const model = getModelApiCode(orderData.modelCode);
       const options = orderData.mktOptions;
 
@@ -90,16 +90,23 @@ const generateCompositorUrl = (orderData: CombinedOrder['order']): string | null
       
       const formattedOptions = options.split(',').filter(o => o.trim()).map(o => `$${o.trim()}`).join(',');
 
-      const params = new URLSearchParams({
+      const baseParams: Record<string, string> = {
           context: 'design_studio_2',
           bkba_opt: '1',
-          view: 'STUD_3QTR',
-          size: '800',
-          model: model,
+          model,
           options: formattedOptions,
-          crop: '1150,647,390,180'
-      });
+      };
 
+      if (view === 'STUD_3QTR') {
+          baseParams.view = 'STUD_3QTR';
+          baseParams.size = '800';
+          baseParams.crop = '1150,647,390,180';
+      } else { // STUD_SEAT
+          baseParams.view = 'STUD_SEAT';
+          baseParams.size = '600';
+      }
+
+      const params = new URLSearchParams(baseParams);
       return `${COMPOSITOR_BASE_URL}?${params.toString()}`;
 };
 
@@ -166,8 +173,9 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
 
   const modelCode = normalizeModelCode(order.modelCode);
   const fallbackImageUrl = modelCode ? FALLBACK_CAR_IMAGE_URLS[modelCode] : undefined;
-  const imageUrl = generateCompositorUrl(order) || fallbackImageUrl;
-  
+  const exteriorImageUrl = generateCompositorUrl(order, 'STUD_3QTR') || fallbackImageUrl;
+  const interiorImageUrl = generateCompositorUrl(order, 'STUD_SEAT');
+
   const vin = createDiffWithValue('order.vin');
   const deliveryWindow = createDiffWithValue('details.tasks.scheduling.deliveryWindowDisplay');
   const appointment = createDiffWithValue('details.tasks.scheduling.apptDateTimeAddressStr');
@@ -203,15 +211,23 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
 
   return (
     <>
-      <div className="group bg-white dark:bg-tesla-gray-800 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full border border-gray-200 dark:border-tesla-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-tesla-red/10 hover:-translate-y-1">
-        {imageUrl && (
-          <div className="bg-gray-100 dark:bg-black/20 p-4 flex justify-center items-center h-32">
+      <div className="bg-white dark:bg-tesla-gray-800 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full border border-gray-200 dark:border-tesla-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-tesla-red/10 hover:-translate-y-1">
+        {exteriorImageUrl && (
+          <div className="relative group bg-gray-100 dark:bg-black/20 p-4 flex justify-center items-center h-48 cursor-pointer" title={interiorImageUrl ? "Hover to view interior" : ""}>
             <img
-              src={imageUrl}
+              src={exteriorImageUrl}
               alt={`Tesla Model ${modelCode}`}
-              className="h-full object-contain transition-transform duration-300 ease-in-out group-hover:scale-105"
+              className={`h-full object-contain transition-all duration-300 ease-in-out group-hover:scale-105 ${interiorImageUrl ? 'group-hover:opacity-0' : ''}`}
               loading="lazy"
             />
+            {interiorImageUrl && (
+                <img
+                    src={interiorImageUrl}
+                    alt={`Tesla Model ${modelCode} Interior`}
+                    className="absolute inset-0 w-full h-full object-contain p-4 transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100 group-hover:scale-105"
+                    loading="lazy"
+                />
+            )}
           </div>
         )}
         <div className="p-5 border-b border-gray-200 dark:border-tesla-gray-700/50">
