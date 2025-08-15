@@ -211,7 +211,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
 
   return (
     <>
-      <div className="bg-white dark:bg-tesla-gray-800 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full border border-gray-200 dark:border-tesla-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-tesla-red/10 hover:-translate-y-1">
+      <div className="bg-white dark:bg-tesla-gray-800 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full border border-gray-200 dark:border-tesla-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-tesla-red/10">
         {exteriorImageUrl && (
           <div className="relative group bg-gray-100 dark:bg-black/20 p-4 flex justify-center items-center h-48 cursor-pointer" title={interiorImageUrl ? "Hover to view interior" : ""}>
             <img
