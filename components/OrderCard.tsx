@@ -98,13 +98,11 @@ const generateCompositorUrl = (orderData: CombinedOrder['order'], view: string):
           options: formattedOptions,
           view,
           size: '1024',
+          crop: '1150,647,390,180'
       };
 
       // View-specific adjustments
       switch (view) {
-          case 'STUD_3QTR':
-              baseParams.crop = '1150,647,390,180';
-              break;
           case 'RIMCLOSEUP':
               baseParams.crop = '0,0,80,0';
               baseParams.size = '800';
