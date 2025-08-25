@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { CombinedOrder, OrderDiff } from '../types';
 import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon } from './icons';
 import { COMPOSITOR_BASE_URL, FALLBACK_CAR_IMAGE_URLS } from '../constants';
@@ -9,6 +9,7 @@ import VehicleOptions from './VehicleOptions';
 import TasksList from './TasksList';
 import HistoryModal from './HistoryModal';
 import JsonViewer from './JsonViewer';
+import ImageCarousel from './ImageCarousel';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
@@ -80,7 +81,7 @@ const getModelApiCode = (apiCode?: string): string | null => {
     }
 };
 
-const generateCompositorUrl = (orderData: CombinedOrder['order'], view: 'STUD_3QTR' | 'STUD_SEAT'): string | null => {
+const generateCompositorUrl = (orderData: CombinedOrder['order'], view: string): string | null => {
       const model = getModelApiCode(orderData.modelCode);
       const options = orderData.mktOptions;
 
@@ -95,15 +96,19 @@ const generateCompositorUrl = (orderData: CombinedOrder['order'], view: 'STUD_3Q
           bkba_opt: '1',
           model,
           options: formattedOptions,
+          view,
+          size: '1024',
       };
 
-      if (view === 'STUD_3QTR') {
-          baseParams.view = 'STUD_3QTR';
-          baseParams.size = '800';
-          baseParams.crop = '1150,647,390,180';
-      } else { // STUD_SEAT
-          baseParams.view = 'STUD_SEAT';
-          baseParams.size = '600';
+      // View-specific adjustments
+      switch (view) {
+          case 'STUD_3QTR':
+              baseParams.crop = '1150,647,390,180';
+              break;
+          case 'RIMCLOSEUP':
+              baseParams.crop = '0,0,80,0';
+              baseParams.size = '800';
+              break;
       }
 
       const params = new URLSearchParams(baseParams);
@@ -137,7 +142,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
   const [activeView, setActiveView] = useState<'details' | 'checklist' | 'tasks' | 'json'>('details');
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const { order, details } = combinedOrder;
-
+  
   const getDiffFor = (path: string) => diff[path];
   
   const getVehicleLocationName = (locationCode?: string) => {
@@ -172,9 +177,41 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
   };
 
   const modelCode = normalizeModelCode(order.modelCode);
-  const fallbackImageUrl = modelCode ? FALLBACK_CAR_IMAGE_URLS[modelCode] : undefined;
-  const exteriorImageUrl = generateCompositorUrl(order, 'STUD_3QTR') || fallbackImageUrl;
-  const interiorImageUrl = generateCompositorUrl(order, 'STUD_SEAT');
+
+  const carouselImages = useMemo(() => {
+    const imageConfigs = [
+      { view: 'STUD_3QTR', label: 'Exterior' },
+      { view: 'SIDE', label: 'Side Profile' },
+      { view: 'REAR34', label: 'Rear Quarter' },
+      { view: 'STUD_SEAT', label: 'Front Interior' },
+      { view: 'INTERIOR_ROW2', label: 'Rear Interior' },
+      { view: 'RIMCLOSEUP', label: 'Wheel Detail' },
+    ];
+
+    const generated = imageConfigs
+      .map(({ view, label }) => ({
+        src: generateCompositorUrl(order, view),
+        alt: `Tesla Model ${modelCode} - ${label}`,
+        label: label,
+      }))
+      .filter((img): img is { src: string; alt: string; label: string } => img.src !== null);
+
+    if (generated.length > 0) {
+      return generated;
+    }
+
+    // Fallback if no compositor images can be generated
+    const fallbackImageUrl = modelCode ? FALLBACK_CAR_IMAGE_URLS[modelCode] : undefined;
+    if (fallbackImageUrl) {
+      return [{
+        src: fallbackImageUrl,
+        alt: `Tesla Model ${modelCode}`,
+        label: 'Vehicle',
+      }];
+    }
+    
+    return [];
+  }, [order, modelCode]);
 
   const vin = createDiffWithValue('order.vin');
   const deliveryWindow = createDiffWithValue('details.tasks.scheduling.deliveryWindowDisplay');
@@ -212,22 +249,11 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
   return (
     <>
       <div className="bg-white dark:bg-tesla-gray-800 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full border border-gray-200 dark:border-tesla-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-tesla-red/10">
-        {exteriorImageUrl && (
-          <div className="relative group bg-gray-100 dark:bg-black/20 p-4 flex justify-center items-center h-48 cursor-pointer" title={interiorImageUrl ? "Hover to view interior" : ""}>
-            <img
-              src={exteriorImageUrl}
-              alt={`Tesla Model ${modelCode}`}
-              className={`h-full object-contain transition-all duration-300 ease-in-out group-hover:scale-105 ${interiorImageUrl ? 'group-hover:opacity-0' : ''}`}
-              loading="lazy"
-            />
-            {interiorImageUrl && (
-                <img
-                    src={interiorImageUrl}
-                    alt={`Tesla Model ${modelCode} Interior`}
-                    className="absolute inset-0 w-full h-full object-contain p-4 transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100 group-hover:scale-105"
-                    loading="lazy"
-                />
-            )}
+        {carouselImages.length > 0 ? (
+          <ImageCarousel images={carouselImages} />
+        ) : (
+          <div className="bg-gray-100 dark:bg-black/20 h-64 flex items-center justify-center">
+            <CarIcon className="w-24 h-24 text-gray-300 dark:text-tesla-gray-600" />
           </div>
         )}
         <div className="p-5 border-b border-gray-200 dark:border-tesla-gray-700/50">

@@ -31,6 +31,8 @@ import {
   Braces,
   Copy,
   Github,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 export const TeslaLogo: React.FC<{ className?: string }> = ({ className }) => (
@@ -70,6 +72,9 @@ export const ChevronDownIcon = ChevronDown;
 export const ETAIcon = Hourglass;
 export const SunIcon = Sun;
 export const MoonIcon = Moon;
+export const ChevronLeftIcon = ChevronLeft;
+export const ChevronRightIcon = ChevronRight;
+
 
 // Icons for Timeline
 export const TimelinePlacedIcon = ClipboardList;
