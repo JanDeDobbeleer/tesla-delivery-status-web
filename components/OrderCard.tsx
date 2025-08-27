@@ -10,6 +10,7 @@ import TasksList from './TasksList';
 import HistoryModal from './HistoryModal';
 import JsonViewer from './JsonViewer';
 import ImageCarousel from './ImageCarousel';
+import DeliveryGates from './DeliveryGates';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
@@ -315,6 +316,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
                   
                   {order.isB2b && <div className="md:col-span-2"><DetailItem icon={<CompanyIcon />} label="Company" value={companyName.value} diffValue={companyName.diffValue} /></div>}
               </div>
+
+              <DeliveryGates gates={details?.tasks?.deliveryAcceptance?.gates} />
               
               <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isExpanded ? 'max-h-screen mt-4 pt-4 border-t border-gray-200 dark:border-tesla-gray-700/50' : 'max-h-0'}`}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
