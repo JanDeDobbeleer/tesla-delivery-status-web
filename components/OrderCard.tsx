@@ -11,6 +11,7 @@ import HistoryModal from './HistoryModal';
 import JsonViewer from './JsonViewer';
 import ImageCarousel from './ImageCarousel';
 import DeliveryGates from './DeliveryGates';
+import VinDecoder from './VinDecoder';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
@@ -245,6 +246,11 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
     </button>
   );
 
+  const oldValueOrDefault = (val: any) => {
+    if (val === undefined || val === null || val === '') return 'N/A';
+    return val;
+  };
+
   return (
     <>
       <div className="bg-white dark:bg-tesla-gray-800 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full border border-gray-200 dark:border-tesla-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-tesla-red/10">
@@ -298,9 +304,32 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
           <div className="flex-grow flex flex-col" role="tabpanel">
             <div className="p-5 flex-grow">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-                  <DetailItem icon={<KeyIcon />} label="VIN" value={vin.value} diffValue={vin.diffValue} />
+                  {(() => {
+                      const hasChanged = !!vin.diffValue;
+                      const displayValue = hasChanged ? oldValueOrDefault(vin.diffValue.new) : oldValueOrDefault(vin.value);
+                      const highlightClass = hasChanged ? 'bg-yellow-500/10 ring-1 ring-inset ring-yellow-500/20' : '';
+                      const valueClass = (displayValue === 'N/A') ? 'text-gray-400 dark:text-tesla-gray-500 font-normal' : 'text-gray-800 dark:text-white font-semibold';
+                      
+                      return (
+                        <div className={`flex items-start space-x-3 p-3 rounded-lg md:col-span-2 ${highlightClass}`}>
+                          <div className="flex-shrink-0 h-6 w-6 text-gray-400 dark:text-tesla-gray-400 pt-0.5"><KeyIcon /></div>
+                          <div className="w-full">
+                            <p className="text-sm font-medium text-gray-500 dark:text-tesla-gray-400">VIN</p>
+                            <p className={`text-base break-words ${valueClass}`}>{displayValue}</p>
+                            {hasChanged && (
+                              <p className="text-xs text-yellow-400 mt-1">
+                                From: <span className="line-through">{oldValueOrDefault(vin.diffValue.old)}</span>
+                              </p>
+                            )}
+                            {vin.value && vin.value !== 'N/A' && <VinDecoder vin={vin.value} />}
+                          </div>
+                        </div>
+                      );
+                  })()}
+
                   <DetailItem icon={<ETAIcon />} label="ETA to Delivery Center" value={eta.value} diffValue={eta.diffValue} />
-                  
+                  <div className="md:col-span-2"></div>
+
                   <div className="md:col-span-2">
                       <DetailItem icon={<ClockIcon />} label="Delivery Window" value={deliveryWindow.value} diffValue={deliveryWindow.diffValue} />
                   </div>
