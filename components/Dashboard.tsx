@@ -4,7 +4,7 @@ import { getAllOrderData } from '../services/tesla';
 import { compareObjects } from '../utils/helpers';
 import OrderCard from './OrderCard';
 import Spinner from './Spinner';
-import { TeslaLogo, LogoutIcon, RefreshIcon, SunIcon, MoonIcon, GithubIcon } from './icons';
+import { TeslaLogo, LogoutIcon, RefreshIcon, SunIcon, MoonIcon, GithubIcon, CoffeeIcon } from './icons';
 import { GITHUB_REPO_URL } from '../constants';
 
 interface DashboardProps {
@@ -148,6 +148,15 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Delivery Status</h1>
         </div>
         <div className="flex items-center space-x-1 sm:space-x-2">
+           <a
+            href="https://buymeacoffee.com/mrproper"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={iconButtonClasses}
+            aria-label="Buy me a coffee to support the developer"
+          >
+            <CoffeeIcon className="w-6 h-6" />
+          </a>
            <a
             href={GITHUB_REPO_URL}
             target="_blank"

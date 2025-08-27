@@ -33,6 +33,7 @@ import {
   Github,
   ChevronLeft,
   ChevronRight,
+  Coffee,
 } from 'lucide-react';
 
 export const TeslaLogo: React.FC<{ className?: string }> = ({ className }) => (
@@ -102,3 +103,6 @@ export const CopyIcon = Copy;
 
 // Icon for Github link
 export const GithubIcon = Github;
+
+// Icon for donation link
+export const CoffeeIcon = Coffee;
