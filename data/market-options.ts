@@ -407,7 +407,7 @@ export const MARKET_OPTIONS_MAP: Record<string, string> = {
   "MTY14": "Model Y Long Range All-Wheel Drive",
   "MTY29": "Model Y Long Range Rear-Wheel Drive",
   "MTY45": "Model Y Performance",
-  "MTY46": "Model Y Short Range Rear Motor - RWD SR (Juniper)",
+  "MTY46": "Model Y Standard Range Rear Motor - RWD SR (Juniper)",
   "MTY47": "Model Y Long Range Dual Motor - AWD LR (Juniper)",
   "MTY52": "Model Y Long Range Rear Motor - RWD LR (Juniper)",
   "MX06": "Model X 2021+",
