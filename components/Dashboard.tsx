@@ -4,6 +4,7 @@ import { getAllOrderData } from '../services/tesla';
 import { compareObjects } from '../utils/helpers';
 import OrderCard from './OrderCard';
 import Spinner from './Spinner';
+import Toast from './Toast';
 import { TeslaLogo, LogoutIcon, RefreshIcon, SunIcon, MoonIcon, GithubIcon, CoffeeIcon } from './icons';
 import { GITHUB_REPO_URL } from '../constants';
 
@@ -20,10 +21,14 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
   const [diffs, setDiffs] = useState<Record<string, OrderDiff>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
 
-  const fetchAndCompareOrders = useCallback(async () => {
+  const fetchAndCompareOrders = useCallback(async (isManualRefresh: boolean = false) => {
     setLoading(true);
     setError(null);
+    if (isManualRefresh) {
+      setToast(null);
+    }
     try {
       const newOrders = await getAllOrderData(tokens.access_token);
       const latestDiffs: Record<string, OrderDiff> = {};
@@ -61,6 +66,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
 
       setOrders(newOrders);
       setDiffs(latestDiffs);
+      
+      if (Object.keys(latestDiffs).length > 0) {
+        setToast({ message: 'New changes detected!', type: 'success' });
+      } else if (isManualRefresh) {
+        setToast({ message: 'No new changes found.', type: 'info' });
+      }
 
     } catch (err) {
       console.error('Failed to fetch orders:', err);
@@ -74,7 +85,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
   }, [tokens.access_token, onSessionExpired]);
 
   useEffect(() => {
-    fetchAndCompareOrders();
+    fetchAndCompareOrders(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -102,6 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
     if (orders.length > 0) {
       if (orders.length === 1) {
         const singleOrder = orders[0];
+        const hasNewChanges = Object.keys(diffs[singleOrder.order.referenceNumber] || {}).length > 0;
         return (
           <div className="flex justify-center">
             <div className="w-full max-w-4xl">
@@ -109,6 +121,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
                 key={singleOrder.order.referenceNumber}
                 combinedOrder={singleOrder}
                 diff={diffs[singleOrder.order.referenceNumber] || {}}
+                hasNewChanges={hasNewChanges}
               />
             </div>
           </div>
@@ -117,13 +130,17 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
 
       return (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-          {orders.map((combinedOrder) => (
-            <OrderCard
-              key={combinedOrder.order.referenceNumber}
-              combinedOrder={combinedOrder}
-              diff={diffs[combinedOrder.order.referenceNumber] || {}}
-            />
-          ))}
+          {orders.map((combinedOrder) => {
+            const hasNewChanges = Object.keys(diffs[combinedOrder.order.referenceNumber] || {}).length > 0;
+            return (
+              <OrderCard
+                key={combinedOrder.order.referenceNumber}
+                combinedOrder={combinedOrder}
+                diff={diffs[combinedOrder.order.referenceNumber] || {}}
+                hasNewChanges={hasNewChanges}
+              />
+            );
+          })}
         </div>
       );
     }
@@ -142,6 +159,8 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
 
   return (
     <div className="min-h-screen w-full max-w-screen-2xl mx-auto p-4 sm:p-6 lg:p-8">
+      {toast && <Toast key={Date.now()} message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
       <header className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200 dark:border-tesla-gray-700/50">
         <div className="flex items-center space-x-4">
             <TeslaLogo className="w-8 h-8 text-tesla-red" />
@@ -174,7 +193,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
             {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
           </button>
           <button
-            onClick={fetchAndCompareOrders}
+            onClick={() => fetchAndCompareOrders(true)}
             disabled={loading}
             className={`${iconButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:bg-transparent dark:disabled:bg-transparent`}
             aria-label="Refresh Orders"

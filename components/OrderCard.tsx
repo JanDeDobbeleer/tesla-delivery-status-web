@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CombinedOrder, OrderDiff } from '../types';
-import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon } from './icons';
+import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon, InfoIcon } from './icons';
 import { COMPOSITOR_BASE_URL, FALLBACK_CAR_IMAGE_URLS } from '../constants';
 import { TESLA_STORES } from '../data/tesla-stores';
 import OrderTimeline from './OrderTimeline';
@@ -12,10 +12,12 @@ import JsonViewer from './JsonViewer';
 import ImageCarousel from './ImageCarousel';
 import DeliveryGates from './DeliveryGates';
 import VinDecoder from './VinDecoder';
+import Tooltip from './Tooltip';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
   diff: OrderDiff;
+  hasNewChanges: boolean;
 }
 
 const DetailItem: React.FC<{
@@ -23,7 +25,8 @@ const DetailItem: React.FC<{
   label: string;
   value: React.ReactNode;
   diffValue?: { old: any; new: any };
-}> = ({ icon, label, value, diffValue }) => {
+  tooltipText?: string;
+}> = ({ icon, label, value, diffValue, tooltipText }) => {
   const hasChanged = diffValue && JSON.stringify(diffValue.old) !== JSON.stringify(diffValue.new);
 
   const oldValueOrDefault = (val: any) => {
@@ -42,7 +45,14 @@ const DetailItem: React.FC<{
     <div className={`flex items-start space-x-3 p-3 rounded-lg ${highlightClass}`}>
       <div className="flex-shrink-0 h-6 w-6 text-gray-400 dark:text-tesla-gray-400 pt-0.5">{icon}</div>
       <div>
-        <p className="text-sm font-medium text-gray-500 dark:text-tesla-gray-400">{label}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-medium text-gray-500 dark:text-tesla-gray-400">{label}</p>
+          {tooltipText && (
+            <Tooltip text={tooltipText}>
+              <InfoIcon className="w-3.5 h-3.5 text-gray-400 dark:text-tesla-gray-500 cursor-help" />
+            </Tooltip>
+          )}
+        </div>
         <p className={`text-base break-words ${valueClass}`}>{displayValue}</p>
         {hasChanged && (
           <p className="text-xs text-yellow-400 mt-1">
@@ -137,7 +147,7 @@ const OrderStatusBadge: React.FC<{ status: string }> = ({ status }) => {
 };
 
 
-const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
+const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChanges }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeView, setActiveView] = useState<'details' | 'checklist' | 'tasks' | 'json'>('details');
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -277,8 +287,10 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
               <div className="flex-shrink-0 flex items-center gap-2">
                   <button
                       onClick={() => setIsHistoryModalOpen(true)}
-                      className="p-2 rounded-full text-gray-500 dark:text-tesla-gray-400 hover:bg-gray-200 dark:hover:bg-tesla-gray-700 transition-all duration-150 active:scale-90 active:bg-gray-300 dark:active:bg-tesla-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-tesla-gray-800"
-                      aria-label="View Order History"
+                      className={`p-2 rounded-full text-gray-500 dark:text-tesla-gray-400 hover:bg-gray-200 dark:hover:bg-tesla-gray-700 transition-all duration-150 active:scale-90 active:bg-gray-300 dark:active:bg-tesla-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-tesla-gray-800 ${
+                        hasNewChanges ? 'bg-yellow-500/10 ring-2 ring-yellow-500/40 animate-pulse' : ''
+                      }`}
+                      aria-label={hasNewChanges ? 'View Order History (New Changes)' : 'View Order History'}
                   >
                       <HistoryIcon className="w-5 h-5" />
                   </button>
@@ -301,7 +313,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
 
         {/* --- Conditional Content --- */}
         {activeView === 'details' && (
-          <div className="flex-grow flex flex-col" role="tabpanel">
+          <div className="flex-grow flex flex-col animate-fade-in-up" role="tabpanel">
             <div className="p-5 flex-grow">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
                   {(() => {
@@ -327,30 +339,30 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
                       );
                   })()}
 
-                  <DetailItem icon={<ETAIcon />} label="ETA to Delivery Center" value={eta.value} diffValue={eta.diffValue} />
+                  <DetailItem icon={<ETAIcon />} label="ETA to Delivery Center" value={eta.value} diffValue={eta.diffValue} tooltipText="Estimated Time of Arrival of your vehicle at the designated delivery center. This is not your delivery date." />
                   <div className="md:col-span-2"></div>
 
                   <div className="md:col-span-2">
-                      <DetailItem icon={<ClockIcon />} label="Delivery Window" value={deliveryWindow.value} diffValue={deliveryWindow.diffValue} />
+                      <DetailItem icon={<ClockIcon />} label="Delivery Window" value={deliveryWindow.value} diffValue={deliveryWindow.diffValue} tooltipText="The timeframe provided by Tesla during which your delivery is expected to take place. This may change." />
                   </div>
                   <div className="md:col-span-2">
-                      <DetailItem icon={<PinIcon />} label="Delivery Appointment" value={appointment.value} diffValue={appointment.diffValue} />
+                      <DetailItem icon={<PinIcon />} label="Delivery Appointment" value={appointment.value} diffValue={appointment.diffValue} tooltipText="Your confirmed date, time, and location for vehicle pickup." />
                   </div>
 
-                  <DetailItem icon={<CarIcon />} label="Vehicle Location" value={vehicleLocation.value} diffValue={vehicleLocation.diffValue} />
-                  <DetailItem icon={<DeliveryIcon />} label="Delivery Method" value={deliveryMethod.value} diffValue={deliveryMethod.diffValue} />
-                  <DetailItem icon={<GeoIcon />} label="Delivery Center" value={deliveryCenter.value} diffValue={deliveryCenter.diffValue} />
-                  <DetailItem icon={<GaugeIcon />} label="Odometer" value={odometer.value} diffValue={odometer.diffValue} />
-                  <DetailItem icon={<CalendarIcon />} label="Order Booked Date" value={orderBookedDate.value} diffValue={orderBookedDate.diffValue} />
+                  <DetailItem icon={<CarIcon />} label="Vehicle Location" value={vehicleLocation.value} diffValue={vehicleLocation.diffValue} tooltipText="The last reported location of your vehicle in Tesla's logistics system." />
+                  <DetailItem icon={<DeliveryIcon />} label="Delivery Method" value={deliveryMethod.value} diffValue={deliveryMethod.diffValue} tooltipText="How your vehicle will be delivered (e.g., Pickup at a Tesla center, Home Delivery)." />
+                  <DetailItem icon={<GeoIcon />} label="Delivery Center" value={deliveryCenter.value} diffValue={deliveryCenter.diffValue} tooltipText="The Tesla location where you will pick up your vehicle." />
+                  <DetailItem icon={<GaugeIcon />} label="Odometer" value={odometer.value} diffValue={odometer.diffValue} tooltipText="The vehicle's mileage at the time of the last data sync. It's normal for new cars to have a few miles from factory testing and transport." />
+                  <DetailItem icon={<CalendarIcon />} label="Order Booked Date" value={orderBookedDate.value} diffValue={orderBookedDate.diffValue} tooltipText="The date your order was officially confirmed and placed in the production queue." />
                   
-                  {order.isB2b && <div className="md:col-span-2"><DetailItem icon={<CompanyIcon />} label="Company" value={companyName.value} diffValue={companyName.diffValue} /></div>}
+                  {order.isB2b && <div className="md:col-span-2"><DetailItem icon={<CompanyIcon />} label="Company" value={companyName.value} diffValue={companyName.diffValue} tooltipText="The company name associated with the order, typically for business or fleet purchases." /></div>}
               </div>
 
               <DeliveryGates gates={details?.tasks?.deliveryAcceptance?.gates} />
               
               <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isExpanded ? 'max-h-screen mt-4 pt-4 border-t border-gray-200 dark:border-tesla-gray-700/50' : 'max-h-0'}`}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-                      <DetailItem icon={<CalendarIcon />} label="Reservation Date" value={reservationDate.value} diffValue={reservationDate.diffValue} />
+                      <DetailItem icon={<CalendarIcon />} label="Reservation Date" value={reservationDate.value} diffValue={reservationDate.diffValue} tooltipText="The date you initially placed your reservation or pre-order." />
                       <div className={`md:col-span-2 flex items-start space-x-3 p-3 rounded-lg ${mktOptions.diffValue ? 'bg-yellow-500/10 ring-1 ring-inset ring-yellow-500/20' : ''}`}>
                           <div className="flex-shrink-0 h-6 w-6 text-gray-400 dark:text-tesla-gray-400 pt-0.5"><OptionsIcon /></div>
                           <div className="w-full overflow-hidden">
@@ -374,19 +386,19 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff }) => {
         )}
 
         {activeView === 'tasks' && (
-          <div role="tabpanel" className="flex-grow">
+          <div role="tabpanel" className="flex-grow animate-fade-in-up">
             <TasksList tasksData={details.tasks} />
           </div>
         )}
 
         {activeView === 'checklist' && (
-          <div role="tabpanel">
+          <div role="tabpanel" className="animate-fade-in-up">
               <DeliveryChecklist orderReferenceNumber={order.referenceNumber} />
           </div>
         )}
 
         {activeView === 'json' && (
-          <div role="tabpanel" className="flex-grow">
+          <div role="tabpanel" className="flex-grow animate-fade-in-up">
             <JsonViewer data={combinedOrder} />
           </div>
         )}

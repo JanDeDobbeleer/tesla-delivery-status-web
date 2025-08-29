@@ -13,6 +13,7 @@ interface ImageCarouselProps {
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
     const goToPrevious = useCallback(() => {
         const isFirstSlide = currentIndex === 0;
@@ -29,13 +30,41 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
     const goToSlide = (slideIndex: number) => {
         setCurrentIndex(slideIndex);
     };
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setTouchStartX(e.touches[0].clientX);
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStartX === null) {
+            return;
+        }
+
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchDiff = touchStartX - touchEndX;
+        const minSwipeDistance = 50; // Minimum distance in pixels for a swipe gesture
+
+        if (touchDiff > minSwipeDistance) {
+            // Swiped left
+            goToNext();
+        } else if (touchDiff < -minSwipeDistance) {
+            // Swiped right
+            goToPrevious();
+        }
+
+        setTouchStartX(null); // Reset for the next swipe
+    };
     
     if (!images || images.length === 0) {
         return null;
     }
 
     return (
-        <div className="h-64 w-full relative group bg-gray-100 dark:bg-black/20">
+        <div 
+            className="h-64 w-full relative group bg-gray-100 dark:bg-black/20"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+        >
             {/* Image container with cross-fade effect */}
             <div className="w-full h-full">
                 {images.map((image, index) => (
@@ -47,6 +76,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
                             index === currentIndex ? 'opacity-100' : 'opacity-0'
                         }`}
                         loading={index === 0 ? 'eager' : 'lazy'} // Eagerly load the first image
+                        draggable="false" // Prevent default browser drag behavior which interferes with swipe
                     />
                 ))}
             </div>
@@ -81,7 +111,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
                         key={slideIndex}
                         onClick={() => goToSlide(slideIndex)}
                         className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                            currentIndex === slideIndex ? 'bg-white scale-125 ring-2 ring-white/50' : 'bg-white/50 hover:bg-white'
+                            currentIndex === slideIndex ? 'bg-gray-800 dark:bg-white scale-125 ring-2 ring-gray-800/50 dark:ring-white/50' : 'bg-gray-800/50 dark:bg-white/50 hover:bg-gray-800 dark:hover:bg-white'
                         }`}
                         aria-label={`Go to image ${slideIndex + 1}`}
                         aria-current={currentIndex === slideIndex}
