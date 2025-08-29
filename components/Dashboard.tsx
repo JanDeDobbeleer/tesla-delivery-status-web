@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { TeslaTokens, CombinedOrder, OrderDiff, HistoricalSnapshot } from '../types';
 import { getAllOrderData } from '../services/tesla';
 import { compareObjects } from '../utils/helpers';
@@ -23,6 +22,35 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+  const [logoClicks, setLogoClicks] = useState(0);
+  const [rainbowMode, setRainbowMode] = useState(false);
+  const clickTimeoutRef = useRef<number | null>(null);
+
+  const handleLogoClick = useCallback(() => {
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+
+    const newClickCount = logoClicks + 1;
+    setLogoClicks(newClickCount);
+
+    if (newClickCount >= 7) {
+      setRainbowMode(prev => !prev);
+      setLogoClicks(0);
+    } else {
+      clickTimeoutRef.current = window.setTimeout(() => {
+        setLogoClicks(0);
+      }, 1500); // Reset if not clicked again within 1.5 seconds
+    }
+  }, [logoClicks]);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const fetchAndCompareOrders = useCallback(async (isManualRefresh: boolean = false) => {
     setLoading(true);
@@ -170,7 +198,14 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
       
       <header className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200 dark:border-tesla-gray-700/50">
         <div className="flex items-center space-x-4">
-            <TeslaLogo className="w-8 h-8 text-tesla-red" />
+            <div 
+              onClick={handleLogoClick}
+              className="cursor-pointer p-1 -m-1 rounded-full select-none"
+              role="button"
+              aria-label="Tesla Logo Easter Egg"
+            >
+              <TeslaLogo className={`w-8 h-8 transition-colors duration-300 ${rainbowMode ? 'animate-rainbow' : 'text-tesla-red'}`} />
+            </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Delivery Status</h1>
         </div>
         <div className="flex items-center space-x-1 sm:space-x-2">
