@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { TeslaTokens, CombinedOrder, OrderDiff, HistoricalSnapshot } from '../types';
 import { getAllOrderData } from '../services/tesla';
@@ -11,12 +12,12 @@ import { GITHUB_REPO_URL } from '../constants';
 interface DashboardProps {
   tokens: TeslaTokens;
   onLogout: () => void;
-  onSessionExpired: () => void;
+  handleRefreshAndRetry: <T>(apiRequest: (accessToken: string) => Promise<T>) => Promise<T | null>;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpired, theme, toggleTheme }) => {
+const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAndRetry, theme, toggleTheme }) => {
   const [orders, setOrders] = useState<CombinedOrder[]>([]);
   const [diffs, setDiffs] = useState<Record<string, OrderDiff>>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -30,7 +31,15 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
       setToast(null);
     }
     try {
-      const newOrders = await getAllOrderData(tokens.access_token);
+      const newOrders = await handleRefreshAndRetry((accessToken) => getAllOrderData(accessToken));
+
+      // If the refresh failed, newOrders will be null and a logout has been triggered.
+      // The component will unmount shortly, so we can stop processing.
+      if (!newOrders) {
+        setLoading(false);
+        return;
+      }
+      
       const latestDiffs: Record<string, OrderDiff> = {};
 
       for (const newCombinedOrder of newOrders) {
@@ -74,15 +83,13 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, onSessionExpire
       }
 
     } catch (err) {
+      // This will now only catch non-authentication errors.
       console.error('Failed to fetch orders:', err);
-      setError('Could not retrieve order information. The session might be invalid.');
-      if (err instanceof Error && err.message.includes('401')) {
-          setTimeout(onSessionExpired, 3000);
-      }
+      setError('Could not retrieve order information. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
-  }, [tokens.access_token, onSessionExpired]);
+  }, [handleRefreshAndRetry]);
 
   useEffect(() => {
     fetchAndCompareOrders(false);

@@ -12,6 +12,14 @@ import {
 } from '../constants';
 import { generateCodeVerifier, generateCodeChallenge } from '../utils/helpers';
 
+// Custom error for handling expired tokens
+export class TokenExpiredError extends Error {
+  constructor(message = 'Access token is expired') {
+    super(message);
+    this.name = 'TokenExpiredError';
+  }
+}
+
 // --- Authentication Flow ---
 
 export async function handleTeslaLogin(): Promise<string> {
@@ -90,6 +98,12 @@ async function proxyApiRequest(url: string, accessToken: string) {
             accessToken: accessToken,
         }),
     });
+    
+    // Specifically handle 401 Unauthorized errors for token refresh logic
+    if (response.status === 401) {
+        const errorData = await response.json().catch(() => ({ error: 'Unauthorized' }));
+        throw new TokenExpiredError(`API request failed with 401: ${errorData.error_description || errorData.error || 'Unauthorized'}`);
+    }
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Could not parse error response from proxy' }));

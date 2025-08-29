@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { TeslaTokens } from './types';
-import { exchangeCodeForTokens, refreshAccessToken } from './services/tesla';
+import { exchangeCodeForTokens, refreshAccessToken, TokenExpiredError } from './services/tesla';
 import { isTokenValid } from './utils/helpers';
 import LoginScreen from './components/LoginScreen';
 import Dashboard from './components/Dashboard';
@@ -39,28 +39,46 @@ const App: React.FC = () => {
   }, [theme]);
 
   const handleLogout = useCallback(() => {
+    // Only clear session-specific data. Order history and checklist progress
+    // will be preserved in localStorage for a better user experience across sessions.
     localStorage.removeItem('tesla-tokens');
-    
-    // Clear all app-specific data from localStorage
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('tesla-order-history-') || key.startsWith('checklist-state-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    // Remove old cache key just in case
-    localStorage.removeItem('tesla-orders-cache');
+    sessionStorage.removeItem('tesla-auth-state');
+    sessionStorage.removeItem('tesla-code-verifier');
+    setTokens(null);
+  }, []);
 
-    sessionStorage.removeItem('tesla-auth-state');
-    sessionStorage.removeItem('tesla-code-verifier');
-    setTokens(null);
-  }, []);
-  
-  const handleSessionExpired = useCallback(() => {
-    localStorage.removeItem('tesla-tokens');
-    sessionStorage.removeItem('tesla-auth-state');
-    sessionStorage.removeItem('tesla-code-verifier');
-    setTokens(null);
-  }, []);
+  const handleRefreshAndRetry = useCallback(async <T,>(apiRequest: (accessToken: string) => Promise<T>): Promise<T | null> => {
+    if (!tokens) {
+      handleLogout();
+      return null;
+    }
+
+    try {
+      // First attempt with the current token
+      return await apiRequest(tokens.access_token);
+    } catch (error: any) {
+      // If the token is expired, try to refresh it
+      if (error instanceof TokenExpiredError) {
+        console.log("Access token expired, attempting to refresh...");
+        try {
+          const newTokens = await refreshAccessToken(tokens.refresh_token);
+          localStorage.setItem('tesla-tokens', JSON.stringify(newTokens));
+          setTokens(newTokens);
+          console.log("Token refresh successful, retrying API request...");
+          // Retry the request with the new token
+          return await apiRequest(newTokens.access_token);
+        } catch (refreshError: any) {
+          console.error("Failed to refresh token:", refreshError);
+          setAuthError('Your session has expired. Please log in again.');
+          handleLogout();
+          return null; // Stop execution, logout is happening
+        }
+      }
+      // Re-throw other types of errors that are not related to token expiry
+      throw error;
+    }
+  }, [tokens, setTokens, handleLogout, setAuthError]);
+
 
   const handleUrlSubmit = async (url: string) => {
     setIsSubmitting(true);
@@ -121,16 +139,16 @@ const App: React.FC = () => {
             setTokens(newTokens);
           }
         } catch (error) {
-          console.error('Failed to validate or refresh token:', error);
+          console.error('Failed to validate or refresh token on initial load:', error);
           setAuthError('Your session has expired. Please log in again.');
-          handleSessionExpired();
+          handleLogout();
         }
       }
       setLoading(false);
     };
 
     checkExistingSession();
-  }, [handleSessionExpired]);
+  }, [handleLogout]);
 
   if (loading) {
     return (
@@ -144,8 +162,8 @@ const App: React.FC = () => {
   return tokens ? (
     <Dashboard 
       tokens={tokens} 
-      onLogout={handleLogout} 
-      onSessionExpired={handleSessionExpired}
+      onLogout={handleLogout}
+      handleRefreshAndRetry={handleRefreshAndRetry}
       theme={theme}
       toggleTheme={toggleTheme}
     />
