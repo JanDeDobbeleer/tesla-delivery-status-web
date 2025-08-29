@@ -1,21 +1,101 @@
-import React from 'react';
+import React, { useState, useRef, cloneElement } from 'react';
+import {
+  useFloating,
+  useHover,
+  useInteractions,
+  useTransitionStyles,
+  offset,
+  flip,
+  shift,
+  arrow,
+  autoUpdate,
+  FloatingPortal,
+  Placement,
+} from '@floating-ui/react';
 
 interface TooltipProps {
   text: string;
-  children: React.ReactNode;
+  children: React.ReactElement;
+  placement?: Placement;
 }
 
-const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
+const Tooltip: React.FC<TooltipProps> = ({ text, children, placement = 'top' }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const arrowRef = useRef(null);
+
+  const { x, y, refs, strategy, context, middlewareData, placement: finalPlacement } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    placement,
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      offset(10),
+      flip({ fallbackAxisSideDirection: 'start', crossAxis: false }),
+      shift({ padding: 8 }),
+      arrow({ element: arrowRef }),
+    ],
+  });
+  
+  const hover = useHover(context, { move: false, delay: { open: 100, close: 0 } });
+  const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
+
+  const { isMounted, styles: transitionStyles } = useTransitionStyles(context, {
+      duration: 200,
+      initial: {
+          opacity: 0,
+          transform: 'scale(0.95)',
+      },
+      open: {
+          opacity: 1,
+          transform: 'scale(1)',
+      },
+      close: {
+          opacity: 0,
+          transform: 'scale(0.95)',
+      }
+  });
+
+  const staticSide = {
+    top: 'bottom',
+    right: 'left',
+    bottom: 'top',
+    left: 'right',
+  }[finalPlacement.split('-')[0] as 'top' | 'right' | 'bottom' | 'left'];
+  
+  const arrowStyles = middlewareData.arrow ? {
+    left: `${middlewareData.arrow.x}px`,
+    top: `${middlewareData.arrow.y}px`,
+    // Fix: Use the correctly typed `staticSide` without a fallback.
+    [staticSide]: '-4px',
+  } : {};
+
   return (
-    <div className="relative flex items-center group">
-      {children}
-      <div className="absolute bottom-full left-0 mb-2 w-max max-w-xs p-2.5 text-xs font-semibold text-white bg-gray-900 dark:bg-black rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-        {text}
-        <svg className="absolute text-gray-900 dark:text-black h-2 w-4 left-2 top-full" viewBox="0 0 16 8">
-          <polygon className="fill-current" points="0,0 16,0 8,8"/>
-        </svg>
-      </div>
-    </div>
+    <>
+      {cloneElement(children, getReferenceProps({ ref: refs.setReference, ...children.props }))}
+      {isMounted && (
+        <FloatingPortal>
+          <div
+            ref={refs.setFloating}
+            style={{
+              position: strategy,
+              top: y ?? 0,
+              left: x ?? 0,
+              ...transitionStyles,
+            }}
+            {...getFloatingProps()}
+            className="w-max max-w-xs p-2.5 text-xs font-semibold text-white bg-gray-900 dark:bg-black rounded-lg shadow-lg z-[9999]"
+            role="tooltip"
+          >
+            {text}
+            <div
+                ref={arrowRef}
+                className="absolute h-2 w-2 rotate-45 bg-gray-900 dark:bg-black"
+                style={arrowStyles}
+            />
+          </div>
+        </FloatingPortal>
+      )}
+    </>
   );
 };
 
