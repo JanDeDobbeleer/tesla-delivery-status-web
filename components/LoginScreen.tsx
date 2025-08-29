@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { handleTeslaLogin } from '../services/tesla';
 import { TeslaLogo, GithubIcon } from './icons';
 import { GITHUB_REPO_URL } from '../constants';
@@ -31,6 +32,35 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
   const [pastedUrl, setPastedUrl] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
   const [loginUrlForFallback, setLoginUrlForFallback] = useState<string | null>(null);
+  const [logoClicks, setLogoClicks] = useState(0);
+  const [rainbowMode, setRainbowMode] = useState(false);
+  const clickTimeoutRef = useRef<number | null>(null);
+
+  const handleLogoClick = useCallback(() => {
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+
+    const newClickCount = logoClicks + 1;
+    setLogoClicks(newClickCount);
+
+    if (newClickCount >= 7) {
+      setRainbowMode(prev => !prev);
+      setLogoClicks(0);
+    } else {
+      clickTimeoutRef.current = window.setTimeout(() => {
+        setLogoClicks(0);
+      }, 1500); // Reset if not clicked again within 1.5 seconds
+    }
+  }, [logoClicks]);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const onLoginClick = async () => {
     setLocalError(null);
@@ -65,7 +95,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="text-center max-w-lg w-full bg-white/60 dark:bg-tesla-gray-800/50 backdrop-blur-sm border border-gray-300 dark:border-tesla-gray-700 p-8 rounded-2xl shadow-xl">
-          <TeslaLogo className="w-24 h-24 mx-auto text-gray-900 dark:text-white mb-6" />
+          <div 
+            onClick={handleLogoClick}
+            className="cursor-pointer p-1 -m-1 rounded-full select-none inline-block mb-6"
+            role="button"
+            aria-label="Tesla Logo Easter Egg"
+          >
+            <TeslaLogo className={`w-24 h-24 mx-auto text-gray-900 dark:text-white transition-colors duration-300 ${rainbowMode ? 'animate-rainbow' : ''}`} />
+          </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Complete Sign-In</h2>
           <p className="text-gray-600 dark:text-tesla-gray-300 mb-6">
             A new tab was opened for you to sign in. After logging in, you'll see a blank page. <strong>Copy the full URL</strong> from that page's address bar and paste it below.
@@ -137,8 +174,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="text-center max-w-md w-full bg-white/60 dark:bg-tesla-gray-800/50 backdrop-blur-sm border border-gray-300 dark:border-tesla-gray-700 p-8 rounded-2xl shadow-xl">
-        <div className="mx-auto mb-6">
-          <TeslaLogo className="w-24 h-24 mx-auto text-gray-900 dark:text-white"/>
+        <div 
+          onClick={handleLogoClick}
+          className="mx-auto mb-6 cursor-pointer p-1 -m-1 rounded-full select-none inline-block"
+          role="button"
+          aria-label="Tesla Logo Easter Egg"
+        >
+          <TeslaLogo className={`w-24 h-24 mx-auto text-gray-900 dark:text-white transition-colors duration-300 ${rainbowMode ? 'animate-rainbow' : ''}`}/>
         </div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Delivery Status
