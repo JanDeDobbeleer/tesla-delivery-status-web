@@ -48,6 +48,11 @@
         85% { color: #9400d3; }
         100% { color: #ff0000; }
       }
+      @keyframes jiggle {
+        0%, 100% { transform: rotate(0); }
+        25% { transform: rotate(-4deg); }
+        75% { transform: rotate(4deg); }
+      }
       .animate-slide-in-right {
         animation: slide-in-right 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
       }
@@ -59,6 +64,9 @@
       }
       .animate-rainbow {
         animation: rainbow 4s linear infinite;
+      }
+      .animate-jiggle {
+        animation: jiggle 0.4s ease-in-out 2s 2; /* Animate twice, after a 2-second delay */
       }
     </style>
     <script>

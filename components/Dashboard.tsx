@@ -7,6 +7,7 @@ import Spinner from './Spinner';
 import Toast from './Toast';
 import { TeslaLogo, LogoutIcon, RefreshIcon, SunIcon, MoonIcon, GithubIcon, CoffeeIcon } from './icons';
 import { GITHUB_REPO_URL } from '../constants';
+import Tooltip from './Tooltip';
 
 interface DashboardProps {
   tokens: TeslaTokens;
@@ -209,15 +210,18 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Delivery Status</h1>
         </div>
         <div className="flex items-center space-x-1 sm:space-x-2">
-           <a
-            href="https://buymeacoffee.com/mrproper"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={iconButtonClasses}
-            aria-label="Buy me a coffee to support the developer"
-          >
-            <CoffeeIcon className="w-6 h-6" />
-          </a>
+          <Tooltip text="If this app saves you from compulsively checking the Tesla app, consider supporting its development. It's greatly appreciated!">
+            <a
+              href="https://buymeacoffee.com/mrproper"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 px-3 sm:px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-yellow-400/20 dark:bg-yellow-500/20 hover:bg-yellow-400/40 dark:hover:bg-yellow-500/30 rounded-full transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-tesla-gray-900 active:scale-95 animate-jiggle"
+              aria-label="Support the developer by buying them a coffee"
+            >
+              <CoffeeIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">Buy me a coffee</span>
+            </a>
+          </Tooltip>
            <a
             href={GITHUB_REPO_URL}
             target="_blank"
