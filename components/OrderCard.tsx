@@ -263,7 +263,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
 
   return (
     <>
-      <div className="bg-white dark:bg-tesla-gray-800 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full border border-gray-200 dark:border-tesla-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-tesla-red/10">
+      <article className="bg-white dark:bg-tesla-gray-800 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full border border-gray-200 dark:border-tesla-gray-700/50 transition-all duration-300 ease-in-out hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-tesla-red/10">
         {carouselImages.length > 0 ? (
           <ImageCarousel images={carouselImages} />
         ) : (
@@ -271,18 +271,18 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
             <CarIcon className="w-24 h-24 text-gray-300 dark:text-tesla-gray-600" />
           </div>
         )}
-        <div className="p-5 border-b border-gray-200 dark:border-tesla-gray-700/50">
+        <header className="p-5 border-b border-gray-200 dark:border-tesla-gray-700/50">
           <div className="flex justify-between items-start gap-4">
               <div>
                    <div className="flex items-center space-x-3">
-                      <p className="text-xl font-bold text-gray-900 dark:text-white">Model {modelCode}</p>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">Model {modelCode}</h2>
                       {order.isUsed && (
                           <span className="text-xs font-semibold bg-amber-500/80 text-white px-2 py-0.5 rounded-full">
                               USED
                           </span>
                       )}
                    </div>
-                   <p className="text-xs font-mono text-gray-500 dark:text-tesla-gray-400 mt-1">{order.referenceNumber}</p>
+                   <p className="text-xs font-mono text-gray-500 dark:text-tesla-gray-400 mt-1" aria-label={`Reference Number: ${order.referenceNumber}`}>{order.referenceNumber}</p>
               </div>
               <div className="flex-shrink-0 flex items-center gap-2">
                   <button
@@ -297,7 +297,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
                   <OrderStatusBadge status={order.orderStatus} />
               </div>
           </div>
-        </div>
+        </header>
 
         <div className="border-b border-gray-200 dark:border-tesla-gray-700/50">
           <OrderTimeline combinedOrder={combinedOrder} />
@@ -402,7 +402,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
             <JsonViewer data={combinedOrder} />
           </div>
         )}
-      </div>
+      </article>
 
       <HistoryModal
         isOpen={isHistoryModalOpen}

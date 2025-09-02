@@ -93,7 +93,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
 
   if (loginStep === 'paste_url') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <main className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="text-center max-w-lg w-full bg-white/60 dark:bg-tesla-gray-800/50 backdrop-blur-sm border border-gray-300 dark:border-tesla-gray-700 p-8 rounded-2xl shadow-xl">
           <div 
             onClick={handleLogoClick}
@@ -167,12 +167,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
           </p>
           <GithubLink />
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+    <main className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="text-center max-w-md w-full bg-white/60 dark:bg-tesla-gray-800/50 backdrop-blur-sm border border-gray-300 dark:border-tesla-gray-700 p-8 rounded-2xl shadow-xl">
         <div 
           onClick={handleLogoClick}
@@ -219,7 +219,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ error, onUrlSubmit, isSubmitt
         </div>
         <GithubLink />
       </div>
-    </div>
+    </main>
   );
 };
 
