@@ -69,7 +69,7 @@ export async function exchangeCodeForTokens(code: string, codeVerifier: string):
 export async function refreshAccessToken(refreshToken: string): Promise<TeslaTokens> {
     const body = {
         grant_type: 'refresh_token',
-        refreshToken,
+        refresh_token: refreshToken,
     };
 
     const response = await fetch(PROXY_API_URL, {
