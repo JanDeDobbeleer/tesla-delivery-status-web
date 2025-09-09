@@ -15,6 +15,7 @@ import VinDecoder from './VinDecoder';
 import Tooltip from './Tooltip';
 import SchedulingBanner from './SchedulingBanner';
 import AppointmentDetailsModal from './AppointmentDetailsModal';
+import CountdownTimer from './CountdownTimer';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
@@ -314,6 +315,11 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
           <OrderTimeline combinedOrder={combinedOrder} />
         </div>
 
+        {/* --- Countdown Timer --- */}
+        {schedulingTask?.apptDateTimeAddressStr && (
+          <CountdownTimer targetDateString={schedulingTask.apptDateTimeAddressStr} />
+        )}
+        
         <SchedulingBanner schedulingTask={schedulingTask} />
 
         {/* --- View Switcher --- */}
