@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CombinedOrder, OrderDiff } from '../types';
-import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon, InfoIcon } from './icons';
+import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon, InfoIcon, ArrowRightIcon } from './icons';
 import { COMPOSITOR_BASE_URL, FALLBACK_CAR_IMAGE_URLS } from '../constants';
 import { TESLA_STORES } from '../data/tesla-stores';
 import OrderTimeline from './OrderTimeline';
@@ -13,6 +13,7 @@ import ImageCarousel from './ImageCarousel';
 import DeliveryGates from './DeliveryGates';
 import VinDecoder from './VinDecoder';
 import Tooltip from './Tooltip';
+import SchedulingBanner from './SchedulingBanner';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
@@ -152,7 +153,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
   const [activeView, setActiveView] = useState<'details' | 'checklist' | 'tasks' | 'json'>('details');
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const { order, details } = combinedOrder;
-  
+  const schedulingTask = details?.tasks?.scheduling;
+
   const getDiffFor = (path: string) => diff[path];
   
   const getVehicleLocationName = (locationCode?: string) => {
@@ -302,6 +304,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
         <div className="border-b border-gray-200 dark:border-tesla-gray-700/50">
           <OrderTimeline combinedOrder={combinedOrder} />
         </div>
+
+        <SchedulingBanner schedulingTask={schedulingTask} />
 
         {/* --- View Switcher --- */}
         <div className="flex border-b border-gray-200 dark:border-tesla-gray-700/50 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" role="tablist">

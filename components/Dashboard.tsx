@@ -5,9 +5,11 @@ import { compareObjects } from '../utils/helpers';
 import OrderCard from './OrderCard';
 import Spinner from './Spinner';
 import Toast from './Toast';
-import { TeslaLogo, LogoutIcon, RefreshIcon, SunIcon, MoonIcon, GithubIcon } from './icons';
+import { TeslaLogo, LogoutIcon, RefreshIcon, SunIcon, MoonIcon, GithubIcon, ResetIcon } from './icons';
 import { GITHUB_REPO_URL } from '../constants';
 import BuyMeACoffeeButton from './BuyMeACoffeeButton';
+import AdminPanel from './AdminPanel';
+import Tooltip from './Tooltip';
 
 interface DashboardProps {
   tokens: TeslaTokens;
@@ -25,6 +27,8 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
   const [logoClicks, setLogoClicks] = useState(0);
   const [rainbowMode, setRainbowMode] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+  const [mockOrder, setMockOrder] = useState<CombinedOrder | null>(null);
   const clickTimeoutRef = useRef<number | null>(null);
 
   const handleLogoClick = useCallback(() => {
@@ -35,14 +39,16 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
     const newClickCount = logoClicks + 1;
     setLogoClicks(newClickCount);
 
-    if (newClickCount >= 7) {
-      setRainbowMode(prev => !prev);
+    if (newClickCount >= 13) {
+      setIsAdminPanelOpen(true);
       setLogoClicks(0);
-    } else {
-      clickTimeoutRef.current = window.setTimeout(() => {
-        setLogoClicks(0);
-      }, 1500); // Reset if not clicked again within 1.5 seconds
+    } else if (newClickCount >= 7) {
+      setRainbowMode(prev => !prev);
     }
+    
+    clickTimeoutRef.current = window.setTimeout(() => {
+        setLogoClicks(0);
+    }, 1500);
   }, [logoClicks]);
 
   useEffect(() => {
@@ -62,8 +68,6 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
     try {
       const newOrders = await handleRefreshAndRetry((accessToken) => getAllOrderData(accessToken));
 
-      // If the refresh failed, newOrders will be null and a logout has been triggered.
-      // The component will unmount shortly, so we can stop processing.
       if (!newOrders) {
         setLoading(false);
         return;
@@ -83,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
             }
         } catch (e) {
             console.error("Failed to parse history from localStorage for", rn, e);
-            history = []; // Start fresh if parsing fails
+            history = [];
         }
 
         const lastSnapshotData = history.length > 0 ? history[history.length - 1].data : null;
@@ -96,7 +100,6 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
             latestDiffs[rn] = diff;
           }
         } else {
-          // First time seeing this order, initialize history
           const initialHistory = [{ timestamp: Date.now(), data: newCombinedOrder }];
           localStorage.setItem(historyKey, JSON.stringify(initialHistory));
         }
@@ -112,7 +115,6 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
       }
 
     } catch (err) {
-      // This will now only catch non-authentication errors.
       console.error('Failed to fetch orders:', err);
       setError('Could not retrieve order information. Please check your connection and try again.');
     } finally {
@@ -125,7 +127,39 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleApplyMockJson = (json: CombinedOrder) => {
+    setMockOrder(json);
+    setToast({ message: 'Developer mode: Mock data loaded!', type: 'info' });
+  };
+
+  const handleResetToLive = () => {
+    setMockOrder(null);
+    setToast({ message: 'Switched back to live data. Refreshing...', type: 'info' });
+    fetchAndCompareOrders(true);
+  };
+
+
   const renderContent = () => {
+    if (mockOrder) {
+      return (
+        <>
+          <div className="mb-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-500/40 text-yellow-800 dark:text-yellow-100 rounded-lg text-center font-semibold animate-fade-in-up">
+            Developer Mode: Displaying mock data.
+          </div>
+          <div className="flex justify-center animate-fade-in-up">
+            <div className="w-full max-w-4xl">
+              <OrderCard
+                key={mockOrder.order.referenceNumber}
+                combinedOrder={mockOrder}
+                diff={{}}
+                hasNewChanges={false}
+              />
+            </div>
+          </div>
+        </>
+      );
+    }
+    
     if (loading && orders.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center text-center mt-20">
@@ -227,14 +261,28 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
           >
             {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
           </button>
-          <button
-            onClick={() => fetchAndCompareOrders(true)}
-            disabled={loading}
-            className={`${iconButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:bg-transparent dark:disabled:bg-transparent`}
-            aria-label="Refresh Orders"
-          >
-            <RefreshIcon className={`w-6 h-6 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          
+          {mockOrder ? (
+            <Tooltip text="Reset to live data from Tesla API">
+              <button
+                onClick={handleResetToLive}
+                className={iconButtonClasses}
+                aria-label="Reset to Live Data"
+              >
+                <ResetIcon className="w-6 h-6 text-yellow-500" />
+              </button>
+            </Tooltip>
+          ) : (
+            <button
+              onClick={() => fetchAndCompareOrders(true)}
+              disabled={loading}
+              className={`${iconButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:bg-transparent dark:disabled:bg-transparent`}
+              aria-label="Refresh Orders"
+            >
+              <RefreshIcon className={`w-6 h-6 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          )}
+
           <button
             onClick={onLogout}
             className={iconButtonClasses}
@@ -248,6 +296,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tokens, onLogout, handleRefreshAn
       <main>
         {renderContent()}
       </main>
+
+      <AdminPanel 
+        isOpen={isAdminPanelOpen}
+        onClose={() => setIsAdminPanelOpen(false)}
+        onApply={handleApplyMockJson}
+      />
     </div>
   );
 };

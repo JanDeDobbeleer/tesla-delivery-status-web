@@ -35,6 +35,7 @@ import {
   ChevronRight,
   Coffee,
   Info,
+  RotateCcw,
 } from 'lucide-react';
 
 export const TeslaLogo: React.FC<{ className?: string }> = ({ className }) => (
@@ -110,3 +111,6 @@ export const CoffeeIcon = Coffee;
 
 // Icon for tooltips
 export const InfoIcon = Info;
+
+// Icon for Dev Mode
+export const ResetIcon = RotateCcw;
