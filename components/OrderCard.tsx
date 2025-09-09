@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CombinedOrder, OrderDiff } from '../types';
+import { CombinedOrder, OrderDiff, TeslaTask } from '../types';
 import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon, InfoIcon, ArrowRightIcon } from './icons';
 import { COMPOSITOR_BASE_URL, FALLBACK_CAR_IMAGE_URLS } from '../constants';
 import { TESLA_STORES } from '../data/tesla-stores';
@@ -14,6 +14,7 @@ import DeliveryGates from './DeliveryGates';
 import VinDecoder from './VinDecoder';
 import Tooltip from './Tooltip';
 import SchedulingBanner from './SchedulingBanner';
+import AppointmentDetailsModal from './AppointmentDetailsModal';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
@@ -152,8 +153,16 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeView, setActiveView] = useState<'details' | 'checklist' | 'tasks' | 'json'>('details');
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  
   const { order, details } = combinedOrder;
   const schedulingTask = details?.tasks?.scheduling;
+
+  const handleViewAppointment = () => {
+    if (schedulingTask && schedulingTask.apptDateTimeAddressStr) {
+      setIsAppointmentModalOpen(true);
+    }
+  };
 
   const getDiffFor = (path: string) => diff[path];
   
@@ -391,7 +400,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
 
         {activeView === 'tasks' && (
           <div role="tabpanel" className="flex-grow animate-fade-in-up">
-            <TasksList tasksData={details.tasks} />
+            <TasksList tasksData={details.tasks} onViewAppointment={handleViewAppointment} />
           </div>
         )}
 
@@ -412,6 +421,12 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
         isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}
         orderReferenceNumber={order.referenceNumber}
+      />
+      
+      <AppointmentDetailsModal
+        isOpen={isAppointmentModalOpen}
+        onClose={() => setIsAppointmentModalOpen(false)}
+        schedulingTask={schedulingTask}
       />
     </>
   );

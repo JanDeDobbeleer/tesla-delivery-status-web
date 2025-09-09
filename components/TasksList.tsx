@@ -1,13 +1,13 @@
-
 import React from 'react';
 import { OrderDetails, TeslaTask } from '../types';
 import { TimelineDeliveredIcon as CheckIcon, CircleIcon, ArrowRightIcon } from './icons';
 
 interface TasksListProps {
   tasksData: OrderDetails['tasks'];
+  onViewAppointment: (task: TeslaTask) => void;
 }
 
-const TasksList: React.FC<TasksListProps> = ({ tasksData }) => {
+const TasksList: React.FC<TasksListProps> = ({ tasksData, onViewAppointment }) => {
   if (!tasksData) {
     return (
       <div className="p-5 text-center text-gray-500 dark:text-tesla-gray-400">
@@ -27,6 +27,23 @@ const TasksList: React.FC<TasksListProps> = ({ tasksData }) => {
       </div>
     );
   }
+  
+  const handleActionClick = (task: TeslaTask) => {
+    // Specific case for viewing appointment details
+    if (task.id.toLowerCase() === 'scheduling' && task.card?.buttonText?.cta?.toLowerCase().includes('details')) {
+      onViewAppointment(task);
+      return;
+    }
+
+    // Generic case for opening a URL
+    if (task.target) {
+      window.open(task.target, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    
+    // Fallback for buttons with no clear action (like the one that was previously unclickable)
+    console.warn('Task button clicked, but no action defined for:', task);
+  };
 
   return (
     <div className="space-y-4 p-5">
@@ -60,7 +77,10 @@ const TasksList: React.FC<TasksListProps> = ({ tasksData }) => {
           </div>
           {task.enabled && task.card?.buttonText?.cta && (
             <div className="flex-shrink-0 self-center">
-              <button className="flex items-center space-x-1 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-md transition-transform duration-150 active:scale-95">
+              <button
+                onClick={() => handleActionClick(task)}
+                className="flex items-center space-x-1 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-md transition-transform duration-150 active:scale-95"
+              >
                 <span>{task.card.buttonText.cta}</span>
                 <ArrowRightIcon className="w-4 h-4" />
               </button>
