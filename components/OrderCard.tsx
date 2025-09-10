@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CombinedOrder, OrderDiff, TeslaTask } from '../types';
-import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon, InfoIcon, ArrowRightIcon } from './icons';
+import { CalendarIcon, CarIcon, ClockIcon, GeoIcon, GaugeIcon, KeyIcon, PinIcon, CompanyIcon, OptionsIcon, DeliveryIcon, ChevronDownIcon, ETAIcon, ChecklistIcon, TasksIcon, HistoryIcon, JsonIcon, InfoIcon, ArrowRightIcon, LicensePlateIcon } from './icons';
 import { COMPOSITOR_BASE_URL, FALLBACK_CAR_IMAGE_URLS } from '../constants';
 import { TESLA_STORES } from '../data/tesla-stores';
 import OrderTimeline from './OrderTimeline';
@@ -16,6 +16,7 @@ import Tooltip from './Tooltip';
 import SchedulingBanner from './SchedulingBanner';
 import AppointmentDetailsModal from './AppointmentDetailsModal';
 import CountdownTimer from './CountdownTimer';
+import TradeInDetails from './TradeInDetails';
 
 interface OrderCardProps {
   combinedOrder: CombinedOrder;
@@ -236,6 +237,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
   }, [order, modelCode]);
 
   const vin = createDiffWithValue('order.vin');
+  const licensePlate = createDiffWithValue('details.tasks.deliveryDetails.regData.reggieLicensePlate');
   const deliveryWindow = createDiffWithValue('details.tasks.scheduling.deliveryWindowDisplay');
   const appointment = createDiffWithValue('details.tasks.scheduling.apptDateTimeAddressStr');
   const eta = createDiffWithValue('details.tasks.finalPayment.data.etaToDeliveryCenter');
@@ -358,8 +360,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
                       );
                   })()}
 
+                  <DetailItem icon={<LicensePlateIcon />} label="License Plate" value={licensePlate.value} diffValue={licensePlate.diffValue} tooltipText="The official license plate number assigned to your vehicle." />
                   <DetailItem icon={<ETAIcon />} label="ETA to Delivery Center" value={eta.value} diffValue={eta.diffValue} tooltipText="Estimated Time of Arrival of your vehicle at the designated delivery center. This is not your delivery date." />
-                  <div className="md:col-span-2"></div>
 
                   <div className="md:col-span-2">
                       <DetailItem icon={<ClockIcon />} label="Delivery Window" value={deliveryWindow.value} diffValue={deliveryWindow.diffValue} tooltipText="The timeframe provided by Tesla during which your delivery is expected to take place. This may change." />
@@ -378,6 +380,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ combinedOrder, diff, hasNewChange
               </div>
 
               <DeliveryGates gates={details?.tasks?.deliveryAcceptance?.gates} />
+
+              <TradeInDetails tradeInData={details?.tasks?.tradeIn} />
               
               <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isExpanded ? 'max-h-screen mt-4 pt-4 border-t border-gray-200 dark:border-tesla-gray-700/50' : 'max-h-0'}`}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">

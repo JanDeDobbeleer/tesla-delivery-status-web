@@ -37,6 +37,8 @@ import {
   Info,
   RotateCcw,
   Map,
+  RectangleHorizontal,
+  ArrowRightLeft,
 } from 'lucide-react';
 
 export const TeslaLogo: React.FC<{ className?: string }> = ({ className }) => (
@@ -118,3 +120,9 @@ export const ResetIcon = RotateCcw;
 
 // Icon for Maps
 export const MapIcon = Map;
+
+// Icon for License Plate
+export const LicensePlateIcon = RectangleHorizontal;
+
+// Icon for Trade-In
+export const TradeInIcon = ArrowRightLeft;

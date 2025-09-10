@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { CombinedOrder } from '../types';
 import { XIcon } from './icons';
 
@@ -11,6 +11,7 @@ interface AdminPanelProps {
 const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onApply }) => {
   const [jsonInput, setJsonInput] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -32,6 +33,37 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onApply }) => 
       }
     } catch (e: any) {
       setError(`JSON Parse Error: ${e.message}`);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content) {
+        setJsonInput(content); // Populate textarea
+      } else {
+        setError('File content is empty or could not be read.');
+      }
+    };
+    reader.onerror = () => {
+      setError('Failed to read the selected file.');
+    };
+    reader.readAsText(file);
+
+    // Reset input value to allow re-uploading the same file
+    if (event.target) {
+        event.target.value = '';
     }
   };
   
@@ -58,9 +90,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onApply }) => 
           </button>
         </header>
         <main className="flex-grow p-5 overflow-y-auto flex flex-col">
-          <p className="text-sm text-gray-600 dark:text-tesla-gray-300 mb-4">
-            Paste the full JSON response for a single order here to preview how it renders. This is for development purposes only.
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="application/json,.json"
+            className="hidden"
+            aria-hidden="true"
+          />
+          <p className="text-sm text-gray-600 dark:text-tesla-gray-300 mb-2">
+            Paste the full JSON response for a single order here to preview how it renders, or upload a file. This is for development purposes only.
           </p>
+          <button
+            onClick={handleUploadClick}
+            className="mb-4 w-full sm:w-auto self-start px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-tesla-gray-700 border border-gray-300 dark:border-tesla-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-tesla-gray-600 transition-all duration-150 active:scale-95"
+          >
+            Upload JSON File
+          </button>
           <textarea
             value={jsonInput}
             onChange={(e) => setJsonInput(e.target.value)}
